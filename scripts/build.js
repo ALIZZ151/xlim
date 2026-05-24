@@ -9,7 +9,7 @@ copyDir(src, dist);
 
 const cfg = {
   API_BASE_URL: process.env.VITE_API_BASE_URL || process.env.API_BASE_URL || 'https://admin-xlim.alizz.my.id',
-  WHATSAPP_NUMBER: process.env.VITE_WHATSAPP_NUMBER || process.env.WHATSAPP_NUMBER || '628xxxxxxxxxx',
+  WHATSAPP_NUMBER: process.env.VITE_WHATSAPP_NUMBER || process.env.WHATSAPP_NUMBER || '6283193075449',
   SITE_URL: process.env.VITE_SITE_URL || process.env.SITE_URL || 'https://xlim.alizz.my.id',
 };
 fs.writeFileSync(path.join(dist, 'config.js'), `window.XLIMSTORE_CONFIG=${JSON.stringify(cfg, null, 2)};\n`);
