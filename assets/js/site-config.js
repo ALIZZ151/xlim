@@ -1,12 +1,11 @@
 window.XLIM_CONFIG = {
   siteName: 'XLIMSTORE',
-  siteUrl: 'https://xlimstore.example',
-  // Isi dengan URL backend Pterodactyl kamu, contoh: https://api.xlimstore.my.id
-  apiBaseUrl: 'http://localhost:3000',
-  whatsappNumber: '6280000000000',
+  siteUrl: 'https://admin-xlim.alizz.my.id',
+  apiBaseUrl: 'https://xlim.alizz.my.id',
+  whatsappNumber: '6283193075449',
   social: {
-    telegram: 'https://t.me/usernamekamu',
-    instagram: 'https://instagram.com/usernamekamu'
+    telegram: 'https://t.me/xlimstor',
+    instagram: 'https://www.instagram.com/xlim.str.id?igsh=dmJ5dng4OGFxdGR6'
   },
   fallbackImage: '/assets/img/product-fallback.svg'
 };
