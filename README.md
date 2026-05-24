@@ -1,32 +1,17 @@
-# XLIMSTORE Frontend Final
+# XLIMSTORE Frontend - FIX BENAR
 
-Frontend ini tetap static dan ringan untuk Vercel, tapi sudah dipisah menjadi `index.html`, `admin.html`, `assets/css`, dan `assets/js`.
+Build ini dibuat **bulletproof**: CSS dan JavaScript utama sudah di-inline ke `index.html` dan `admin.html`, jadi tampilan tidak akan balik polos walaupun path `/assets/...` di hosting bermasalah.
 
-## Konfigurasi
+## Domain yang dipakai
 
-Edit `assets/js/site-config.js` sebelum deploy:
+- Storefront: `https://xlim.alizz.my.id`
+- Backend/API: `https://admin-xlim.alizz.my.id`
+- Admin dashboard: `https://xlim.alizz.my.id/admin.html` atau `https://xlim.alizz.my.id/admin`
 
-```js
-apiBaseUrl: 'https://domain-backend-pterodactyl-kamu.example',
-whatsappNumber: '628xxxxxxxxxx',
-siteUrl: 'https://domain-frontend-kamu.vercel.app'
-```
+## Cara deploy Vercel
 
-Jangan masukkan secret/token admin ke frontend. File ini hanya untuk config publik.
+Upload semua isi folder ini ke Vercel. Minimal `index.html` dan `admin.html` sudah bisa tampil rapi karena CSS/JS inline, tapi tetap upload folder `assets` untuk gambar OG/fallback.
 
-## Deploy Vercel
+## Kalau masih tampil polos
 
-1. Upload folder frontend ini ke repository/GitHub.
-2. Import ke Vercel sebagai static project tanpa build command.
-3. Pastikan `site-config.js` memakai URL backend HTTPS yang benar.
-4. Setelah deploy, update `FRONTEND_ORIGIN` di backend agar sama dengan domain Vercel.
-
-## Testing frontend
-
-- Buka homepage.
-- Pastikan produk load dari backend.
-- Test search, filter kategori, dan sort.
-- Buka detail produk dan tekan checkout.
-- Pastikan WhatsApp message berisi produk, harga, status, dan catatan.
-- Buka `/admin.html`, login, tambah/edit/hapus produk.
-- Cek mobile view dan focus state keyboard.
+Yang terbuka bukan ZIP ini, deploy belum replace file lama, atau cache CDN/browser masih lama. Lakukan redeploy, clear cache, lalu coba private tab.

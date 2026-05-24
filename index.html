@@ -20,8 +20,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/base.css">
-  <link rel="stylesheet" href="assets/css/store.css">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -36,6 +34,223 @@
     }
   }
   </script>
+
+  <!-- XLIMSTORE BULLETPROOF INLINE CSS: tampilan tetap jalan meski folder assets gagal kebaca -->
+  <style>
+:root {
+  color-scheme: dark;
+  --bg: #070812;
+  --bg-soft: #0d1020;
+  --surface: rgba(17, 22, 39, .72);
+  --surface-solid: #111627;
+  --surface-2: rgba(21, 28, 51, .86);
+  --text: #f8fbff;
+  --muted: #a4adc3;
+  --muted-2: #707a93;
+  --line: rgba(159, 177, 255, .16);
+  --cyan: #22f7ff;
+  --magenta: #ff3df2;
+  --lime: #b6ff3d;
+  --purple: #8a5cff;
+  --blue: #3d7cff;
+  --danger: #ff5571;
+  --warning: #ffd166;
+  --ok: #5cffb0;
+  --radius: 24px;
+  --radius-lg: 32px;
+  --shadow: 0 24px 80px rgba(0, 0, 0, .38);
+  --glow-cyan: 0 0 38px rgba(34, 247, 255, .22);
+  --glow-magenta: 0 0 42px rgba(255, 61, 242, .18);
+  --max: 1160px;
+  --font: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-height: 100vh; font-family: var(--font); background: radial-gradient(circle at top left, rgba(34,247,255,.12), transparent 28rem), radial-gradient(circle at top right, rgba(255,61,242,.14), transparent 26rem), var(--bg); color: var(--text); overflow-x: hidden; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+img { max-width: 100%; display: block; }
+.container { width: min(100% - 32px, var(--max)); margin-inline: auto; }
+.section-pad { padding: 76px 0; }
+.text-neon { background: linear-gradient(105deg, var(--cyan), var(--magenta), var(--lime)); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 16px rgba(34,247,255,.18)); }
+.eyebrow { display: inline-flex; align-items: center; gap: 10px; color: var(--cyan); font-size: .82rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.pulse-dot { width: 10px; height: 10px; border-radius: 999px; background: var(--lime); box-shadow: 0 0 0 8px rgba(182,255,61,.1), 0 0 28px rgba(182,255,61,.6); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 46px; padding: 12px 18px; border-radius: 999px; border: 1px solid transparent; font-weight: 800; transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease, opacity .2s ease; }
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.btn:hover:not(:disabled) { transform: translateY(-2px); }
+.btn:active:not(:disabled) { transform: translateY(0) scale(.98); }
+.btn-primary { color: #041018; background: linear-gradient(135deg, var(--cyan), var(--lime)); box-shadow: 0 14px 36px rgba(34,247,255,.22); }
+.btn-ghost { color: var(--text); background: rgba(255,255,255,.06); border-color: var(--line); backdrop-filter: blur(12px); }
+.btn-ghost:hover { border-color: rgba(34,247,255,.55); box-shadow: var(--glow-cyan); }
+.btn-small { min-height: 38px; padding: 9px 14px; font-size: .9rem; }
+.btn-full { width: 100%; }
+.icon-btn { width: 42px; height: 42px; display: inline-grid; place-items: center; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.06); color: var(--text); font-size: 1.35rem; transition: .2s ease; }
+.icon-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.field { display: grid; gap: 8px; color: var(--muted); font-weight: 700; font-size: .92rem; }
+.field input, .field select, .field textarea { width: 100%; color: var(--text); background: rgba(6, 10, 22, .76); border: 1px solid var(--line); border-radius: 16px; padding: 13px 14px; outline: none; transition: border-color .2s ease, box-shadow .2s ease, background .2s ease; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: rgba(34,247,255,.75); box-shadow: 0 0 0 4px rgba(34,247,255,.10); background: rgba(10, 15, 28, .96); }
+.muted { color: var(--muted); }
+.mini-copy { font-size: .88rem; line-height: 1.6; }
+.hidden { display: none !important; }
+.skip-link { position: fixed; z-index: 9999; left: 16px; top: 16px; transform: translateY(-140%); background: var(--cyan); color: #061018; padding: 10px 14px; border-radius: 12px; font-weight: 900; }
+.skip-link:focus { transform: translateY(0); }
+:focus-visible { outline: 3px solid rgba(34,247,255,.85); outline-offset: 3px; }
+.ambient { position: fixed; width: 34rem; height: 34rem; border-radius: 999px; filter: blur(70px); opacity: .28; pointer-events: none; z-index: -1; }
+.ambient-one { background: var(--cyan); top: 10vh; left: -16rem; animation: floatBlob 12s ease-in-out infinite; }
+.ambient-two { background: var(--magenta); right: -18rem; bottom: 12vh; animation: floatBlob 14s ease-in-out infinite reverse; }
+.toast-stack { position: fixed; z-index: 9999; right: 18px; bottom: 18px; display: grid; gap: 10px; width: min(360px, calc(100vw - 36px)); }
+.toast { border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px; background: rgba(13, 18, 34, .92); color: var(--text); box-shadow: var(--shadow); backdrop-filter: blur(18px); animation: toastIn .2s ease both; }
+.toast strong { display: block; margin-bottom: 2px; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes floatBlob { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(32px,-18px,0) scale(1.08); } }
+.skeleton { position: relative; overflow: hidden; background: rgba(255,255,255,.07); border-radius: var(--radius); min-height: 360px; }
+.skeleton::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,.09), transparent); animation: shimmer 1.2s infinite; }
+@keyframes shimmer { to { transform: translateX(100%); } }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 900; letter-spacing: -.03em; }
+.brand-mark { width: 42px; height: 42px; border-radius: 14px; display: inline-grid; place-items: center; color: #061018; background: linear-gradient(135deg, var(--cyan), var(--magenta)); box-shadow: var(--glow-cyan), var(--glow-magenta); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .001ms !important; }
+}
+@media (max-width: 720px) {
+  .section-pad { padding: 54px 0; }
+  .toast-stack { right: 12px; bottom: 12px; }
+}
+
+.site-header { position: sticky; top: 0; z-index: 100; backdrop-filter: blur(18px); background: rgba(7, 8, 18, .70); border-bottom: 1px solid rgba(255,255,255,.06); }
+.announcement { display: flex; justify-content: center; align-items: center; gap: 10px; padding: 9px 12px; font-size: .86rem; color: var(--muted); border-bottom: 1px solid rgba(255,255,255,.06); }
+.announcement span:first-child, .announcement span:last-child { color: var(--text); font-weight: 800; }
+.nav-shell { width: min(100% - 32px, var(--max)); margin: 0 auto; min-height: 74px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.nav-links { display: flex; align-items: center; gap: 18px; color: var(--muted); font-weight: 800; }
+.nav-links a:not(.btn):hover { color: var(--cyan); }
+.admin-link { color: var(--lime) !important; }
+.nav-toggle { display: none; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.06); padding: 10px; }
+.nav-toggle span { display: block; height: 2px; margin: 5px 0; background: var(--text); border-radius: 99px; }
+.hero { padding-top: 78px; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(320px, .75fr); gap: 44px; align-items: center; }
+.hero h1 { margin: 16px 0; font-size: clamp(2.55rem, 7vw, 5.8rem); line-height: .96; letter-spacing: -.075em; }
+.hero p { max-width: 650px; color: var(--muted); font-size: clamp(1.02rem, 2vw, 1.2rem); line-height: 1.75; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0 18px; }
+.trust-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+.trust-pills span { padding: 9px 12px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.05); color: var(--muted); font-weight: 800; font-size: .88rem; }
+.hero-showcase { position: relative; min-height: 460px; display: grid; place-items: center; }
+.floating-card { position: relative; border: 1px solid var(--line); border-radius: var(--radius-lg); background: linear-gradient(145deg, rgba(24,32,61,.86), rgba(10,14,27,.82)); box-shadow: var(--shadow), var(--glow-cyan); backdrop-filter: blur(20px); }
+.hero-card-main { width: min(390px, 100%); padding: 28px; animation: floatHero 4.8s ease-in-out infinite; overflow: hidden; }
+.card-light { position: absolute; inset: -80px -60px auto auto; width: 170px; height: 170px; border-radius: 999px; background: var(--magenta); filter: blur(45px); opacity: .35; }
+.mini-badge { width: fit-content; padding: 7px 10px; border: 1px solid rgba(182,255,61,.35); border-radius: 999px; color: var(--lime); background: rgba(182,255,61,.08); font-weight: 900; font-size: .78rem; letter-spacing: .08em; }
+.hero-card-main h2 { margin: 34px 0 10px; font-size: 2rem; letter-spacing: -.04em; }
+.hero-card-main p { color: var(--muted); line-height: 1.65; }
+.price-row { margin-top: 26px; display: flex; justify-content: space-between; align-items: center; gap: 14px; }
+.price-row strong { font-size: 1.45rem; color: var(--cyan); }
+.price-row span { padding: 8px 10px; border-radius: 999px; background: rgba(92,255,176,.10); color: var(--ok); font-weight: 900; }
+.hero-card-side { position: absolute; right: 0; bottom: 18px; width: 210px; padding: 20px; animation: floatHero 5.4s ease-in-out infinite reverse; }
+.hero-card-side .spark { color: var(--magenta); font-size: 2rem; }
+.hero-card-side strong, .hero-card-side small { display: block; margin-top: 8px; }
+.hero-card-side small { color: var(--muted); line-height: 1.5; }
+@keyframes floatHero { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-18px) rotate(1deg); } }
+.trust-strip { padding: 24px 0; }
+.trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.trust-grid article, .category-card, .product-card, .steps-grid article, .testimonial-grid article, .faq-list details, .state-card { border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); box-shadow: 0 16px 44px rgba(0,0,0,.18); backdrop-filter: blur(18px); }
+.trust-grid article { padding: 18px; }
+.trust-grid strong, .trust-grid span { display: block; }
+.trust-grid strong { margin-bottom: 5px; }
+.trust-grid span { color: var(--muted); font-size: .92rem; }
+.section-heading { margin-bottom: 26px; }
+.section-heading h2 { margin: 10px 0; font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.04; letter-spacing: -.055em; }
+.section-heading p { color: var(--muted); line-height: 1.7; margin: 0; max-width: 680px; }
+.split-heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; }
+.category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.category-card { padding: 22px; min-height: 180px; transition: .22s ease; cursor: pointer; position: relative; overflow: hidden; }
+.category-card::after { content: ""; position: absolute; width: 120px; height: 120px; right: -40px; top: -40px; border-radius: 999px; background: var(--cyan); opacity: .13; filter: blur(12px); }
+.category-card:hover { transform: translateY(-5px); border-color: rgba(34,247,255,.45); }
+.category-card span { font-size: .84rem; color: var(--cyan); font-weight: 900; text-transform: uppercase; }
+.category-card h3 { margin: 18px 0 8px; font-size: 1.5rem; }
+.category-card p { margin: 0; color: var(--muted); line-height: 1.6; }
+.catalog-toolbar { display: grid; grid-template-columns: 1fr 190px 180px; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255,255,255,.045); margin-bottom: 14px; }
+.filter-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 18px; }
+.chip { border: 1px solid var(--line); background: rgba(255,255,255,.05); color: var(--muted); border-radius: 999px; padding: 9px 12px; font-weight: 850; }
+.chip[aria-pressed="true"] { color: #051018; background: linear-gradient(135deg, var(--cyan), var(--lime)); border-color: transparent; }
+.catalog-meta { color: var(--muted); font-weight: 800; margin: 10px 0 18px; }
+.product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.product-card { overflow: hidden; display: flex; flex-direction: column; min-height: 100%; transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease; }
+.product-card:hover { transform: translateY(-7px); border-color: rgba(255,61,242,.38); box-shadow: var(--shadow), var(--glow-magenta); }
+.product-image-wrap { position: relative; background: #0c1020; }
+.product-image { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.product-badge { position: absolute; left: 12px; top: 12px; padding: 7px 10px; border-radius: 999px; font-size: .78rem; font-weight: 900; background: rgba(7,8,18,.74); backdrop-filter: blur(10px); border: 1px solid var(--line); }
+.product-badge.ready { color: var(--ok); }
+.product-badge.habis { color: var(--danger); }
+.product-badge.restock { color: var(--warning); }
+.product-body { padding: 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.product-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.product-tags span { padding: 6px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-weight: 850; font-size: .78rem; }
+.product-title { margin: 0; font-size: 1.18rem; line-height: 1.35; }
+.product-caption { margin: 0; color: var(--muted); line-height: 1.6; flex: 1; }
+.product-price { color: var(--cyan); font-size: 1.3rem; font-weight: 950; }
+.card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 6px; }
+.state-card { text-align: center; padding: 34px; max-width: 680px; margin: 22px auto 0; }
+.state-card h3 { margin: 0 0 8px; font-size: 1.6rem; }
+.state-card p { color: var(--muted); line-height: 1.65; }
+.steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.steps-grid article { padding: 22px; }
+.steps-grid span { color: var(--magenta); font-weight: 950; }
+.steps-grid h3 { margin: 14px 0 8px; }
+.steps-grid p { margin: 0; color: var(--muted); line-height: 1.6; }
+.testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.testimonial-grid article { padding: 22px; }
+.testimonial-grid p { margin: 0 0 16px; line-height: 1.65; color: var(--muted); }
+.faq-list { display: grid; gap: 12px; }
+.faq-list details { padding: 20px; }
+.faq-list summary { cursor: pointer; font-weight: 900; }
+.faq-list p { color: var(--muted); line-height: 1.7; }
+.site-footer { border-top: 1px solid var(--line); padding: 36px 0; background: rgba(4,6,14,.78); }
+.footer-grid { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; }
+.site-footer p { color: var(--muted); max-width: 560px; line-height: 1.7; }
+.footer-links { display: flex; flex-wrap: wrap; gap: 10px; }
+.footer-links a { padding: 10px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-weight: 850; }
+.modal-backdrop { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 22px; background: rgba(0,0,0,.68); backdrop-filter: blur(12px); }
+.modal-panel { position: relative; width: min(980px, 100%); max-height: min(92vh, 900px); overflow: auto; border: 1px solid var(--line); border-radius: var(--radius-lg); background: rgba(12,16,31,.96); box-shadow: var(--shadow); }
+.modal-close { position: absolute; top: 14px; right: 14px; z-index: 2; }
+.modal-product-layout { display: grid; grid-template-columns: .95fr 1fr; gap: 0; }
+.modal-product-image { width: 100%; height: 100%; min-height: 480px; object-fit: cover; background: #0c1020; }
+.modal-copy { padding: 34px; }
+.modal-copy h2 { margin: 14px 0 8px; font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.05; letter-spacing: -.055em; }
+.modal-copy p { color: var(--muted); line-height: 1.7; }
+.modal-price { display: block; color: var(--cyan); font-size: 1.7rem; margin: 16px 0; }
+.notes-box { border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.045); padding: 16px; color: var(--muted); line-height: 1.7; white-space: pre-wrap; }
+.modal-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+.related-wrap h3 { margin: 24px 0 10px; }
+.related-list { display: grid; gap: 9px; }
+.related-item { display: flex; justify-content: space-between; gap: 10px; border: 1px solid var(--line); border-radius: 16px; padding: 12px; background: rgba(255,255,255,.04); }
+.related-item small { color: var(--muted); }
+.checkout-drawer { position: fixed; inset: 0; z-index: 1100; background: rgba(0,0,0,.50); display: flex; justify-content: flex-end; backdrop-filter: blur(10px); }
+.drawer-panel { width: min(460px, 100%); min-height: 100%; overflow: auto; padding: 26px; border-left: 1px solid var(--line); background: rgba(12,16,31,.97); box-shadow: var(--shadow); }
+.drawer-panel .icon-btn { float: right; }
+.checkout-summary { clear: both; border: 1px solid var(--line); border-radius: 20px; padding: 16px; margin: 18px 0; background: rgba(255,255,255,.045); display: grid; gap: 10px; }
+.checkout-summary div { display: flex; justify-content: space-between; gap: 20px; color: var(--muted); }
+.checkout-summary strong { color: var(--text); text-align: right; }
+@media (max-width: 980px) {
+  .hero-grid, .modal-product-layout { grid-template-columns: 1fr; }
+  .hero-showcase { min-height: 360px; }
+  .trust-grid, .steps-grid { grid-template-columns: repeat(2, 1fr); }
+  .category-grid, .product-grid, .testimonial-grid { grid-template-columns: repeat(2, 1fr); }
+  .modal-product-image { min-height: 300px; max-height: 420px; }
+}
+@media (max-width: 760px) {
+  .nav-toggle { display: block; }
+  .nav-links { position: absolute; top: 100%; left: 16px; right: 16px; display: none; flex-direction: column; align-items: stretch; padding: 16px; border: 1px solid var(--line); border-radius: 22px; background: rgba(10,14,27,.98); box-shadow: var(--shadow); }
+  .nav-links.open { display: flex; }
+  .hero { padding-top: 52px; }
+  .hero-showcase { min-height: 320px; }
+  .hero-card-side { right: 14px; bottom: 0; }
+  .split-heading { align-items: stretch; flex-direction: column; }
+  .catalog-toolbar { grid-template-columns: 1fr; }
+  .category-grid, .product-grid, .testimonial-grid, .trust-grid, .steps-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .card-actions { grid-template-columns: 1fr; }
+  .announcement { font-size: .75rem; overflow-x: auto; justify-content: flex-start; }
+}
+
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#produk">Lewati ke katalog</a>
@@ -286,9 +501,522 @@
   </aside>
 
   <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+  <!-- XLIMSTORE BULLETPROOF INLINE JS: config + core + storefront -->
+  <script>
+window.XLIM_CONFIG = {
+  siteName: 'XLIMSTORE',
+  siteUrl: 'https://xlim.alizz.my.id',
+  apiBaseUrl: 'https://admin-xlim.alizz.my.id',
+  whatsappNumber: '6283193075449',
+  social: {
+    telegram: 'https://t.me/xlimstor',
+    instagram: 'https://www.instagram.com/xlim.str.id?igsh=dmJ5dng4OGFxdGR6'
+  },
+  fallbackImage: 'data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='750'%3E%3Crect width='100%25' height='100%25' fill='%23070812'/%3E%3Ctext x='50%25' y='50%25' fill='%2322f7ff' font-size='72' font-family='Arial' text-anchor='middle' dominant-baseline='middle'%3EXLIMSTORE%3C/text%3E%3C/svg%3E'
+};
+  </script>
+  <script>
+(function () {
+  const config = window.XLIM_CONFIG || {};
+  const apiBaseUrl = String(config.apiBaseUrl || '').replace(/\/$/, '');
 
-  <script src="assets/js/site-config.js"></script>
-  <script src="assets/js/core.js"></script>
-  <script src="assets/js/app.js"></script>
+  function apiUrl(path) {
+    if (!path.startsWith('/')) path = `/${path}`;
+    return `${apiBaseUrl}${path}`;
+  }
+
+  function normalizePayload(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (payload && Array.isArray(payload.data)) return payload.data;
+    if (payload && payload.data) return payload.data;
+    return payload;
+  }
+
+  async function apiFetch(path, options = {}) {
+    const headers = options.headers || {};
+    const opts = {
+      credentials: 'include',
+      ...options,
+      headers
+    };
+    if (opts.body && !(opts.body instanceof FormData) && !headers['Content-Type']) {
+      opts.headers = { ...headers, 'Content-Type': 'application/json' };
+      opts.body = JSON.stringify(opts.body);
+    }
+    const response = await fetch(apiUrl(path), opts);
+    let payload = null;
+    const text = await response.text();
+    if (text) {
+      try { payload = JSON.parse(text); } catch { payload = { message: text }; }
+    }
+    if (!response.ok) {
+      const message = payload?.message || payload?.error || 'Request gagal. Coba ulang bentar.';
+      const err = new Error(message);
+      err.status = response.status;
+      err.payload = payload;
+      throw err;
+    }
+    return payload;
+  }
+
+  function formatPrice(value) {
+    const num = Number(String(value || '0').replace(/[^0-9]/g, ''));
+    if (!Number.isFinite(num) || num <= 0) return 'Hubungi admin';
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+  }
+
+  function priceNumber(value) {
+    const num = Number(String(value || '0').replace(/[^0-9]/g, ''));
+    return Number.isFinite(num) ? num : 0;
+  }
+
+  function safeText(value, fallback = '') {
+    return String(value ?? fallback).replace(/[<>]/g, '').trim();
+  }
+
+  function imageUrl(src) {
+    const fallback = config.fallbackImage || '/assets/img/product-fallback.svg';
+    if (!src) return fallback;
+    if (/^https?:\/\//i.test(src) || src.startsWith('data:') || src.startsWith('/assets/')) return src;
+    if (src.startsWith('/')) return `${apiBaseUrl}${src}`;
+    return src;
+  }
+
+  function slugify(value) {
+    return safeText(value).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'produk';
+  }
+
+  function productSlug(product) {
+    return safeText(product.slug) || `${slugify(product.name || product.type || 'produk')}-${safeText(product.id || '')}`.replace(/-$/, '');
+  }
+
+  function getWhatsAppBase() {
+    const number = String(config.whatsappNumber || '').replace(/[^0-9]/g, '');
+    return number ? `https://wa.me/${number}` : '#';
+  }
+
+  function buildWhatsAppLink(product, note = '') {
+    const lines = [
+      'Halo admin XLIMSTORE, aku mau cek/order produk ini:',
+      '',
+      `Produk: ${safeText(product.name || product.type)}`,
+      `Kategori: ${safeText(product.category)}`,
+      `Harga: ${formatPrice(product.price)}`,
+      `Status: ${safeText(product.status || 'ready')}`,
+      product.id ? `ID Produk: ${safeText(product.id)}` : '',
+      '',
+      note ? `Catatan buyer: ${safeText(note)}` : 'Catatan buyer: -',
+      '',
+      'Tolong cek stok dan next step-nya ya.'
+    ].filter(Boolean).join('\n');
+    return `${getWhatsAppBase()}?text=${encodeURIComponent(lines)}`;
+  }
+
+  function toast(title, message = '') {
+    const stack = document.getElementById('toastStack');
+    if (!stack) return;
+    const el = document.createElement('div');
+    el.className = 'toast';
+    const strong = document.createElement('strong');
+    strong.textContent = title;
+    el.appendChild(strong);
+    if (message) {
+      const span = document.createElement('span');
+      span.textContent = message;
+      el.appendChild(span);
+    }
+    stack.appendChild(el);
+    setTimeout(() => el.remove(), 4200);
+  }
+
+  function track(eventName, payload = {}) {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: eventName, ...payload });
+    if (typeof window.gtag === 'function') window.gtag('event', eventName, payload);
+  }
+
+  function createEl(tag, className, text) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text !== undefined) el.textContent = text;
+    return el;
+  }
+
+  function setSocialLinks() {
+    document.querySelectorAll('[data-wa-link]').forEach((a) => {
+      a.href = getWhatsAppBase();
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+    });
+    document.querySelectorAll('[data-social]').forEach((a) => {
+      const key = a.dataset.social;
+      const url = config.social?.[key];
+      if (url) a.href = url;
+      a.rel = 'noopener noreferrer';
+    });
+  }
+
+  window.Xlim = {
+    config,
+    apiUrl,
+    apiFetch,
+    normalizePayload,
+    formatPrice,
+    priceNumber,
+    safeText,
+    imageUrl,
+    slugify,
+    productSlug,
+    buildWhatsAppLink,
+    toast,
+    track,
+    createEl,
+    setSocialLinks
+  };
+})();
+
+  </script>
+  <script>
+(function () {
+  const X = window.Xlim;
+  const state = { products: [], filtered: [], activeCategory: 'all', query: '', sort: 'newest', selected: null };
+  const els = {};
+
+  document.addEventListener('DOMContentLoaded', init);
+
+  function init() {
+    cacheEls();
+    bindUI();
+    X.setSocialLinks();
+    renderSkeleton();
+    loadProducts();
+    hydrateHash();
+  }
+
+  function cacheEls() {
+    Object.assign(els, {
+      navToggle: document.getElementById('navToggle'),
+      navLinks: document.getElementById('navLinks'),
+      productGrid: document.getElementById('productGrid'),
+      categoryGrid: document.getElementById('categoryGrid'),
+      categorySelect: document.getElementById('categorySelect'),
+      filterChips: document.getElementById('filterChips'),
+      searchInput: document.getElementById('searchInput'),
+      sortSelect: document.getElementById('sortSelect'),
+      catalogMeta: document.getElementById('catalogMeta'),
+      emptyState: document.getElementById('emptyState'),
+      errorState: document.getElementById('errorState'),
+      reloadProducts: document.getElementById('reloadProducts'),
+      retryProducts: document.getElementById('retryProducts'),
+      productModal: document.getElementById('productModal'),
+      modalImage: document.getElementById('modalImage'),
+      modalCategory: document.getElementById('modalCategory'),
+      modalStatus: document.getElementById('modalStatus'),
+      modalTitle: document.getElementById('modalTitle'),
+      modalCaption: document.getElementById('modalCaption'),
+      modalPrice: document.getElementById('modalPrice'),
+      modalDescription: document.getElementById('modalDescription'),
+      relatedProducts: document.getElementById('relatedProducts'),
+      openCheckout: document.getElementById('openCheckout'),
+      checkoutDrawer: document.getElementById('checkoutDrawer'),
+      closeCheckout: document.getElementById('closeCheckout'),
+      checkoutSummary: document.getElementById('checkoutSummary'),
+      buyerNote: document.getElementById('buyerNote'),
+      whatsappOrder: document.getElementById('whatsappOrder'),
+      heroProductName: document.getElementById('heroProductName'),
+      heroProductCaption: document.getElementById('heroProductCaption'),
+      heroProductPrice: document.getElementById('heroProductPrice'),
+      heroProductStatus: document.getElementById('heroProductStatus')
+    });
+  }
+
+  function bindUI() {
+    els.navToggle?.addEventListener('click', () => {
+      const isOpen = els.navLinks.classList.toggle('open');
+      els.navToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+    els.navLinks?.addEventListener('click', (e) => {
+      if (e.target.closest('a')) els.navLinks.classList.remove('open');
+    });
+    els.searchInput?.addEventListener('input', debounce((e) => {
+      state.query = e.target.value;
+      X.track('search_used', { query: state.query });
+      applyFilters();
+    }, 180));
+    els.categorySelect?.addEventListener('change', (e) => setCategory(e.target.value));
+    els.sortSelect?.addEventListener('change', (e) => { state.sort = e.target.value; applyFilters(); });
+    els.reloadProducts?.addEventListener('click', loadProducts);
+    els.retryProducts?.addEventListener('click', loadProducts);
+    document.querySelectorAll('[data-close-modal]').forEach((btn) => btn.addEventListener('click', closeModal));
+    els.productModal?.addEventListener('click', (e) => { if (e.target === els.productModal) closeModal(); });
+    els.openCheckout?.addEventListener('click', () => openCheckout(state.selected));
+    els.closeCheckout?.addEventListener('click', closeCheckout);
+    els.buyerNote?.addEventListener('input', () => updateWhatsappLink());
+    els.whatsappOrder?.addEventListener('click', () => {
+      if (state.selected) X.track('whatsapp_order_click', { product_id: state.selected.id, product_name: state.selected.name });
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { closeModal(); closeCheckout(); }
+    });
+    window.addEventListener('hashchange', hydrateHash);
+  }
+
+  async function loadProducts() {
+    renderSkeleton();
+    els.errorState.classList.add('hidden');
+    els.emptyState.classList.add('hidden');
+    try {
+      const payload = await X.apiFetch('/api/products');
+      const products = X.normalizePayload(payload) || [];
+      state.products = Array.isArray(products) ? products.map(normalizeProduct) : [];
+      buildCategories();
+      applyFilters();
+      setHeroProduct();
+      if (!state.products.length) X.toast('Katalog masih kosong', 'Tambahkan produk dari admin dashboard.');
+    } catch (err) {
+      els.productGrid.innerHTML = '';
+      els.catalogMeta.textContent = 'Katalog gagal dimuat.';
+      els.errorState.classList.remove('hidden');
+      X.toast('Katalog lagi ngambek', err.message || 'Coba reload bentar.');
+    }
+  }
+
+  function normalizeProduct(product) {
+    return {
+      id: X.safeText(product.id),
+      slug: X.productSlug(product),
+      name: X.safeText(product.name || product.type || 'Produk digital'),
+      type: X.safeText(product.type || product.category || 'Digital'),
+      category: X.safeText(product.category || 'lainnya').toLowerCase(),
+      caption: X.safeText(product.caption || 'Stok ready, tinggal gas.'),
+      description: X.safeText(product.description || product.notes || product.caption || 'Detail produk bisa kamu cek langsung lewat admin.'),
+      price: product.price || 0,
+      status: X.safeText(product.status || 'ready').toLowerCase(),
+      image: product.image,
+      createdAt: product.createdAt || product.updatedAt || new Date().toISOString()
+    };
+  }
+
+  function buildCategories() {
+    const categories = getCategories();
+    els.categorySelect.innerHTML = '<option value="all">Semua kategori</option>';
+    categories.forEach((cat) => {
+      const option = document.createElement('option');
+      option.value = cat.name;
+      option.textContent = labelCat(cat.name);
+      els.categorySelect.appendChild(option);
+    });
+    els.filterChips.innerHTML = '';
+    [{ name: 'all', count: state.products.length }, ...categories].forEach((cat) => {
+      const btn = X.createEl('button', 'chip', `${cat.name === 'all' ? 'Semua' : labelCat(cat.name)} (${cat.count})`);
+      btn.type = 'button';
+      btn.setAttribute('aria-pressed', String(state.activeCategory === cat.name));
+      btn.addEventListener('click', () => setCategory(cat.name));
+      els.filterChips.appendChild(btn);
+    });
+    els.categoryGrid.innerHTML = '';
+    categories.slice(0, 6).forEach((cat) => {
+      const card = X.createEl('button', 'category-card');
+      card.type = 'button';
+      card.innerHTML = '';
+      card.appendChild(X.createEl('span', '', `${cat.count} produk`));
+      card.appendChild(X.createEl('h3', '', labelCat(cat.name)));
+      card.appendChild(X.createEl('p', '', getCategoryCopy(cat.name)));
+      card.addEventListener('click', () => {
+        setCategory(cat.name);
+        document.getElementById('produk')?.scrollIntoView({ behavior: 'smooth' });
+      });
+      els.categoryGrid.appendChild(card);
+    });
+  }
+
+  function getCategories() {
+    const map = new Map();
+    state.products.forEach((p) => map.set(p.category, (map.get(p.category) || 0) + 1));
+    return [...map.entries()].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+  }
+
+  function setCategory(category) {
+    state.activeCategory = category || 'all';
+    if (els.categorySelect.value !== state.activeCategory) els.categorySelect.value = state.activeCategory;
+    X.track('category_filter_click', { category: state.activeCategory });
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const q = state.query.toLowerCase().trim();
+    let list = [...state.products];
+    if (state.activeCategory !== 'all') list = list.filter((p) => p.category === state.activeCategory);
+    if (q) list = list.filter((p) => `${p.name} ${p.type} ${p.category} ${p.caption} ${p.description}`.toLowerCase().includes(q));
+    if (state.sort === 'price-low') list.sort((a, b) => X.priceNumber(a.price) - X.priceNumber(b.price));
+    else if (state.sort === 'price-high') list.sort((a, b) => X.priceNumber(b.price) - X.priceNumber(a.price));
+    else if (state.sort === 'ready') list.sort((a, b) => Number(b.status === 'ready') - Number(a.status === 'ready') || newestSort(a, b));
+    else list.sort(newestSort);
+    state.filtered = list;
+    renderProducts();
+    buildCategories();
+  }
+
+  function newestSort(a, b) { return new Date(b.createdAt) - new Date(a.createdAt); }
+
+  function renderSkeleton() {
+    els.catalogMeta.textContent = 'Lagi nyiapin katalog...';
+    els.productGrid.innerHTML = '';
+    for (let i = 0; i < 6; i++) els.productGrid.appendChild(X.createEl('div', 'skeleton'));
+  }
+
+  function renderProducts() {
+    els.errorState.classList.add('hidden');
+    els.productGrid.innerHTML = '';
+    els.catalogMeta.textContent = `${state.filtered.length} produk ketemu${state.activeCategory !== 'all' ? ` di ${labelCat(state.activeCategory)}` : ''}.`;
+    els.emptyState.classList.toggle('hidden', state.filtered.length > 0);
+    if (!state.filtered.length) return;
+    state.filtered.forEach((product) => els.productGrid.appendChild(productCard(product)));
+  }
+
+  function productCard(product) {
+    const card = X.createEl('article', 'product-card');
+    const imageWrap = X.createEl('div', 'product-image-wrap');
+    const img = document.createElement('img');
+    img.className = 'product-image';
+    img.src = X.imageUrl(product.image);
+    img.alt = `Gambar ${product.name}`;
+    img.loading = 'lazy';
+    img.onerror = () => { img.src = X.config.fallbackImage; };
+    const badge = X.createEl('span', `product-badge ${product.status}`, statusLabel(product.status));
+    imageWrap.append(img, badge);
+
+    const body = X.createEl('div', 'product-body');
+    const tags = X.createEl('div', 'product-tags');
+    tags.appendChild(X.createEl('span', '', labelCat(product.category)));
+    tags.appendChild(X.createEl('span', '', product.type));
+    const title = X.createEl('h3', 'product-title', product.name);
+    const caption = X.createEl('p', 'product-caption', product.caption);
+    const price = X.createEl('strong', 'product-price', X.formatPrice(product.price));
+    const actions = X.createEl('div', 'card-actions');
+    const detail = X.createEl('button', 'btn btn-ghost btn-small', 'Cek detail');
+    detail.type = 'button';
+    detail.addEventListener('click', () => openModal(product));
+    const order = X.createEl('button', 'btn btn-primary btn-small', product.status === 'ready' ? 'Ambil sekarang' : 'Pantau restock');
+    order.type = 'button';
+    order.addEventListener('click', () => openCheckout(product));
+    actions.append(detail, order);
+    body.append(tags, title, caption, price, actions);
+    card.append(imageWrap, body);
+    return card;
+  }
+
+  function openModal(product) {
+    state.selected = product;
+    X.track('product_view', { product_id: product.id, product_name: product.name, category: product.category });
+    history.replaceState(null, '', `#produk/${product.slug}`);
+    els.modalImage.src = X.imageUrl(product.image);
+    els.modalImage.alt = `Gambar ${product.name}`;
+    els.modalCategory.textContent = labelCat(product.category);
+    els.modalStatus.textContent = statusLabel(product.status);
+    els.modalTitle.textContent = product.name;
+    els.modalCaption.textContent = product.caption;
+    els.modalPrice.textContent = X.formatPrice(product.price);
+    els.modalDescription.textContent = product.description || 'Detail produk bisa ditanyakan langsung ke admin.';
+    renderRelated(product);
+    els.productModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    els.openCheckout.focus();
+  }
+
+  function closeModal() {
+    if (!els.productModal.classList.contains('hidden')) {
+      els.productModal.classList.add('hidden');
+      document.body.style.overflow = '';
+      if (location.hash.startsWith('#produk/')) history.replaceState(null, '', '#produk');
+    }
+  }
+
+  function renderRelated(product) {
+    els.relatedProducts.innerHTML = '';
+    state.products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 3).forEach((p) => {
+      const item = X.createEl('button', 'related-item');
+      item.type = 'button';
+      const left = X.createEl('div');
+      left.appendChild(X.createEl('strong', '', p.name));
+      left.appendChild(X.createEl('small', '', X.formatPrice(p.price)));
+      item.appendChild(left);
+      item.appendChild(X.createEl('span', '', 'Lihat'));
+      item.addEventListener('click', () => openModal(p));
+      els.relatedProducts.appendChild(item);
+    });
+    if (!els.relatedProducts.children.length) els.relatedProducts.textContent = 'Belum ada related product di kategori ini.';
+  }
+
+  function openCheckout(product) {
+    if (!product) return;
+    state.selected = product;
+    X.track('checkout_start', { product_id: product.id, product_name: product.name, category: product.category });
+    els.checkoutSummary.innerHTML = '';
+    [
+      ['Produk', product.name], ['Harga', X.formatPrice(product.price)], ['Kategori', labelCat(product.category)], ['Status', statusLabel(product.status)]
+    ].forEach(([label, value]) => {
+      const row = X.createEl('div');
+      row.appendChild(X.createEl('span', '', label));
+      row.appendChild(X.createEl('strong', '', value));
+      els.checkoutSummary.appendChild(row);
+    });
+    els.buyerNote.value = '';
+    updateWhatsappLink();
+    els.checkoutDrawer.classList.remove('hidden');
+    els.checkoutDrawer.setAttribute('aria-hidden', 'false');
+    els.buyerNote.focus();
+  }
+
+  function closeCheckout() {
+    els.checkoutDrawer.classList.add('hidden');
+    els.checkoutDrawer.setAttribute('aria-hidden', 'true');
+  }
+
+  function updateWhatsappLink() {
+    if (!state.selected) return;
+    els.whatsappOrder.href = X.buildWhatsAppLink(state.selected, els.buyerNote.value);
+  }
+
+  function hydrateHash() {
+    const hash = decodeURIComponent(location.hash || '');
+    const match = hash.match(/^#produk\/(.+)$/);
+    if (!match || !state.products.length) return;
+    const product = state.products.find((p) => p.slug === match[1] || p.id === match[1]);
+    if (product) openModal(product);
+  }
+
+  function setHeroProduct() {
+    const hot = state.products.find((p) => p.status === 'ready') || state.products[0];
+    if (!hot) return;
+    els.heroProductName.textContent = hot.name;
+    els.heroProductCaption.textContent = hot.caption;
+    els.heroProductPrice.textContent = X.formatPrice(hot.price);
+    els.heroProductStatus.textContent = statusLabel(hot.status);
+  }
+
+  function labelCat(category) {
+    const cat = X.safeText(category || 'lainnya');
+    return cat ? cat.charAt(0).toUpperCase() + cat.slice(1) : 'Lainnya';
+  }
+
+  function statusLabel(status) {
+    const map = { ready: 'Ready stock', habis: 'Stok habis', restock: 'Pantau restock' };
+    return map[status] || labelCat(status || 'ready');
+  }
+
+  function getCategoryCopy(category) {
+    if (category.includes('game')) return 'Akun game dan item digital yang paling sering diburu.';
+    if (category.includes('nokos')) return 'Nomor kosong berbagai region, cek stok sebelum gas.';
+    return 'Produk digital lain yang bisa kamu order sat-set.';
+  }
+
+  function debounce(fn, wait) {
+    let timer;
+    return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), wait); };
+  }
+})();
+
+  </script>
 </body>
 </html>
