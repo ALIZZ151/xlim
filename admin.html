@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#070812">
+  <title>Admin XLIMSTORE — Dashboard Katalog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body class="admin-body">
+  <a class="skip-link" href="#dashboard">Lewati ke dashboard</a>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <main class="admin-main" id="dashboard">
+    <section class="login-shell" id="loginView" aria-labelledby="loginTitle">
+      <div class="login-card">
+        <a class="brand" href="/"><span class="brand-mark">XL</span><span><strong>XLIM</strong>STORE</span></a>
+        <span class="eyebrow">Admin surface</span>
+        <h1 id="loginTitle">Masuk dulu, bos.</h1>
+        <p>Dashboard ini pakai cookie session httpOnly. Token admin nggak disimpan di localStorage.</p>
+        <form id="loginForm" class="admin-form">
+          <label class="field" for="adminPassword">
+            <span>Password admin</span>
+            <input id="adminPassword" name="password" type="password" autocomplete="current-password" required placeholder="Masukkan password baru">
+          </label>
+          <button class="btn btn-primary btn-full" type="submit">Masuk dashboard</button>
+        </form>
+        <p class="muted mini-copy">Token nggak cocok? Coba cek lagi, jangan typo.</p>
+      </div>
+    </section>
+
+    <section class="dashboard-shell hidden" id="dashboardView" aria-labelledby="dashboardTitle">
+      <header class="admin-topbar">
+        <a class="brand" href="/"><span class="brand-mark">XL</span><span><strong>XLIM</strong>ADMIN</span></a>
+        <div class="admin-actions">
+          <a class="btn btn-ghost btn-small" href="/" target="_blank" rel="noopener noreferrer">Lihat store</a>
+          <button class="btn btn-ghost btn-small" id="refreshAdmin" type="button">Refresh</button>
+          <button class="btn btn-primary btn-small" id="logoutBtn" type="button">Logout</button>
+        </div>
+      </header>
+
+      <div class="dashboard-hero">
+        <div>
+          <span class="eyebrow">Dashboard katalog</span>
+          <h1 id="dashboardTitle">Produk rapi, admin sat-set.</h1>
+          <p>Kelola produk, upload gambar aman, dan pantau audit log dari satu tempat.</p>
+        </div>
+        <button class="btn btn-primary" id="newProductBtn" type="button">+ Tambah produk</button>
+      </div>
+
+      <section class="stats-grid" aria-label="Ringkasan produk">
+        <article><span>Total produk</span><strong id="statTotal">0</strong></article>
+        <article><span>Ready</span><strong id="statReady">0</strong></article>
+        <article><span>Habis/Restock</span><strong id="statEmpty">0</strong></article>
+        <article><span>Kategori</span><strong id="statCategories">0</strong></article>
+      </section>
+
+      <div class="admin-grid">
+        <section class="panel product-panel" aria-labelledby="productListTitle">
+          <div class="panel-head">
+            <div>
+              <h2 id="productListTitle">List produk</h2>
+              <p>Search cepat sebelum edit atau hapus.</p>
+            </div>
+            <label class="field compact" for="adminSearch"><span>Cari</span><input id="adminSearch" type="search" placeholder="Nama/kategori..."></label>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Produk</th><th>Kategori</th><th>Harga</th><th>Status</th><th>Aksi</th></tr></thead>
+              <tbody id="adminProductRows"><tr><td colspan="5">Lagi load...</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="panel form-panel" aria-labelledby="formTitle">
+          <div class="panel-head">
+            <div><h2 id="formTitle">Tambah produk</h2><p id="formHint">Produk berhasil naik ke katalog setelah disimpan.</p></div>
+            <button class="icon-btn" id="resetForm" type="button" aria-label="Reset form">↺</button>
+          </div>
+          <form id="productForm" class="admin-form">
+            <input type="hidden" id="productId" name="id">
+            <label class="field" for="name"><span>Nama produk</span><input id="name" name="name" required maxlength="90" placeholder="Akun ML Mythic ready"></label>
+            <div class="two-col">
+              <label class="field" for="category"><span>Kategori</span><input id="category" name="category" required maxlength="40" placeholder="game / nokos"></label>
+              <label class="field" for="type"><span>Tipe</span><input id="type" name="type" maxlength="60" placeholder="Akun ML"></label>
+            </div>
+            <label class="field" for="caption"><span>Short caption</span><input id="caption" name="caption" maxlength="150" placeholder="Stok ready, tinggal gas."></label>
+            <label class="field" for="description"><span>Deskripsi / notes</span><textarea id="description" name="description" rows="4" maxlength="800" placeholder="Isi benefit, catatan, atau aturan order."></textarea></label>
+            <div class="two-col">
+              <label class="field" for="price"><span>Harga</span><input id="price" name="price" inputmode="numeric" required placeholder="150000"></label>
+              <label class="field" for="status"><span>Status</span><select id="status" name="status"><option value="ready">Ready</option><option value="habis">Habis</option><option value="restock">Restock</option></select></label>
+            </div>
+            <label class="field file-field" for="image"><span>Upload gambar</span><input id="image" name="image" type="file" accept="image/png,image/jpeg,image/webp"><small>JPG, PNG, atau WEBP. Maksimal sesuai limit backend.</small></label>
+            <img id="imagePreview" class="image-preview hidden" alt="Preview gambar produk">
+            <button class="btn btn-primary btn-full" id="saveProduct" type="submit">Simpan produk</button>
+          </form>
+        </aside>
+      </div>
+
+      <section class="panel audit-panel" aria-labelledby="auditTitle">
+        <div class="panel-head"><div><h2 id="auditTitle">Audit log</h2><p>Login, CRUD produk, dan upload reject tercatat di sini.</p></div><button class="btn btn-ghost btn-small" id="refreshAudit" type="button">Refresh log</button></div>
+        <div class="audit-list" id="auditList">Belum ada log yang dimuat.</div>
+      </section>
+    </section>
+  </main>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+  <script src="/assets/js/site-config.js"></script>
+  <script src="/assets/js/core.js"></script>
+  <script src="/assets/js/admin.js"></script>
+</body>
+</html>
