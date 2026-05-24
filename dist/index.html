@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>XLIMSTORE — Web Store Produk Digital</title>
+  <meta name="description" content="XLIMSTORE adalah web store produk digital untuk akun game, akun FF, nokos WhatsApp Indonesia, dan layanan bot WhatsApp. Order cepat via admin resmi." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://xlim.alizz.my.id/demo" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="XLIMSTORE" />
+  <meta property="og:title" content="XLIMSTORE — Web Store Produk Digital" />
+  <meta property="og:description" content="Akun FF, nokos WhatsApp Indonesia, sewa bot WhatsApp, dan produk digital lain. Stok ready, tinggal gas." />
+  <meta property="og:image" content="https://xlim.alizz.my.id/assets/img/xlimstore-profile.webp" />
+  <meta property="og:url" content="https://xlim.alizz.my.id/demo" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="XLIMSTORE — Web Store Produk Digital" />
+  <meta name="twitter:description" content="Pilih produk, cek detail, lanjut order sat-set via admin resmi." />
+  <meta name="twitter:image" content="https://xlim.alizz.my.id/assets/img/xlimstore-profile.webp" />
+  <link rel="icon" href="/assets/img/favicon.ico" />
+  <link rel="apple-touch-icon" href="/assets/img/icon-192.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="preload" href="/styles.css" as="style" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    "name": "XLIMSTORE",
+    "url": "https://xlim.alizz.my.id",
+    "logo": "https://xlim.alizz.my.id/assets/img/xlimstore-profile.webp",
+    "description": "Web store produk digital untuk akun game, akun FF, nokos WhatsApp Indonesia, dan layanan bot WhatsApp.",
+    "sameAs": []
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "XLIMSTORE",
+    "url": "https://xlim.alizz.my.id",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://xlim.alizz.my.id/produk?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#app">Lewati ke konten</a>
+  <header class="topbar" aria-label="Navigasi utama">
+    <a class="brand" href="/demo" data-link aria-label="XLIMSTORE Beranda">
+      <img src="/assets/img/xlimstore-profile.webp" width="38" height="38" alt="Logo XLIMSTORE" />
+      <span><strong>XLIMSTORE</strong><small>digital mini store</small></span>
+    </a>
+    <nav class="desktop-nav" aria-label="Menu desktop">
+      <a href="/demo" data-link>Demo</a>
+      <a href="/produk" data-link>Produk</a>
+      <a href="/rating" data-link>Rating</a>
+    </nav>
+  </header>
+
+  <main id="app" class="app-shell" tabindex="-1"></main>
+
+  <nav class="bottom-nav" aria-label="Menu bawah">
+    <a href="/demo" data-link data-route="/demo" aria-label="Demo"><span aria-hidden="true">◆</span><b>Demo</b></a>
+    <a href="/produk" data-link data-route="/produk" aria-label="Produk"><span aria-hidden="true">▣</span><b>Produk</b></a>
+    <a href="/rating" data-link data-route="/rating" aria-label="Rating"><span aria-hidden="true">★</span><b>Rating</b></a>
+  </nav>
+
+  <button class="wa-float hidden" id="waFloat" type="button" aria-label="Chat admin XLIMSTORE via WhatsApp">
+    <img src="/assets/img/whatsapp-icon.webp" alt="" width="52" height="52" loading="lazy" />
+  </button>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/config.js"></script>
+  <script src="/app.js" defer></script>
+</body>
+</html>

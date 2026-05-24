@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#22f7ff"/><stop offset=".5" stop-color="#b6ff3d"/><stop offset="1" stop-color="#ff3df2"/></linearGradient></defs>
-  <rect width="1200" height="630" fill="#070812"/>
-  <circle cx="150" cy="120" r="210" fill="#22f7ff" opacity=".22"/>
-  <circle cx="1000" cy="520" r="260" fill="#ff3df2" opacity=".20"/>
-  <text x="90" y="210" fill="url(#g)" font-family="Arial, sans-serif" font-size="88" font-weight="900">XLIMSTORE</text>
-  <text x="90" y="320" fill="#f8fbff" font-family="Arial, sans-serif" font-size="60" font-weight="900">Akun game &amp; nokos sat-set</text>
-  <text x="90" y="395" fill="#a4adc3" font-family="Arial, sans-serif" font-size="34" font-weight="700">Cek stok • Detail produk • Order via admin resmi</text>
-</svg>
