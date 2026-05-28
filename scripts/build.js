@@ -1,30 +1,45 @@
+'use strict';
+
 const fs = require('fs');
 const path = require('path');
 
-const root = path.join(__dirname, '..');
-const src = path.join(root, 'public');
-const dist = path.join(root, 'dist');
-fs.rmSync(dist, { recursive: true, force: true });
-copyDir(src, dist);
+const root = path.resolve(__dirname, '..');
+const publicDir = path.join(root, 'public');
+const distDir = path.join(root, 'dist');
 
-const cfg = {
-  API_BASE_URL: process.env.VITE_API_BASE_URL || process.env.API_BASE_URL || 'https://admin-xlim.alizz.my.id',
-  WHATSAPP_NUMBER: process.env.VITE_WHATSAPP_NUMBER || process.env.WHATSAPP_NUMBER || '6283193075449',
-  SITE_URL: process.env.VITE_SITE_URL || process.env.SITE_URL || 'https://xlim.alizz.my.id',
-};
-fs.writeFileSync(path.join(dist, 'config.js'), `window.XLIMSTORE_CONFIG=${JSON.stringify(cfg, null, 2)};\n`);
-
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${['/demo','/produk','/rating'].map((route) => `  <url><loc>${cfg.SITE_URL}${route}</loc><changefreq>weekly</changefreq><priority>${route === '/produk' ? '0.9' : '0.7'}</priority></url>`).join('\n')}\n</urlset>\n`;
-fs.writeFileSync(path.join(dist, 'sitemap.xml'), sitemap);
-fs.writeFileSync(path.join(dist, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${cfg.SITE_URL}/sitemap.xml\n`);
-console.log('XLIMSTORE frontend build ready:', dist);
-
-function copyDir(from, to) {
-  fs.mkdirSync(to, { recursive: true });
-  for (const entry of fs.readdirSync(from, { withFileTypes: true })) {
-    const a = path.join(from, entry.name);
-    const b = path.join(to, entry.name);
-    if (entry.isDirectory()) copyDir(a, b);
-    else fs.copyFileSync(a, b);
+function copyDir(src, dest) {
+  if (!fs.existsSync(src)) return;
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const from = path.join(src, entry.name);
+    const to = path.join(dest, entry.name);
+    if (entry.isDirectory()) copyDir(from, to);
+    else fs.copyFileSync(from, to);
   }
 }
+
+fs.rmSync(distDir, { recursive: true, force: true });
+copyDir(publicDir, distDir);
+
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || process.env.FRONTEND_ORIGIN || 'https://xlim.alizz.my.id').replace(/\/+$/, '');
+const whatsappNumber = String(process.env.WHATSAPP_NUMBER || '6283193075449').replace(/\D/g, '');
+const telegramUsername = String(process.env.TELEGRAM_USERNAME || 'xlimstor').replace(/^@/, '');
+
+const config = `window.XLIMSTORE_CONFIG = ${JSON.stringify({
+  API_BASE_URL: '',
+  SITE_URL: siteUrl,
+  WHATSAPP_NUMBER: whatsappNumber,
+  TELEGRAM_USERNAME: telegramUsername
+}, null, 2)};\n`;
+fs.writeFileSync(path.join(distDir, 'config.js'), config);
+
+const sitemap = `https://xlim.alizz.my.id/\nhttps://xlim.alizz.my.id/demo\nhttps://xlim.alizz.my.id/produk\nhttps://xlim.alizz.my.id/rating\n`
+  .replaceAll('https://xlim.alizz.my.id', siteUrl)
+  .trim()
+  .split('\n')
+  .map((loc) => `<url><loc>${loc}</loc><changefreq>weekly</changefreq><priority>${loc.endsWith('/produk') ? '0.9' : '0.7'}</priority></url>`)
+  .join('');
+fs.writeFileSync(path.join(distDir, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemap}</urlset>\n`);
+fs.writeFileSync(path.join(distDir, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${siteUrl}/sitemap.xml\n`);
+
+console.log(`Built XLIMSTORE static assets into ${distDir}`);

@@ -1,5 +1,6 @@
 window.XLIMSTORE_CONFIG = {
-  API_BASE_URL: 'https://admin-xlim.alizz.my.id',
+  API_BASE_URL: '',
+  SITE_URL: 'https://xlim.alizz.my.id',
   WHATSAPP_NUMBER: '6283193075449',
-  SITE_URL: 'https://xlim.alizz.my.id'
+  TELEGRAM_USERNAME: 'xlimstor'
 };

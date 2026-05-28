@@ -1,15 +1,20 @@
 {
-  "name": "xlimstore-frontend-final",
-  "version": "3.0.0",
+  "name": "xlimstore-vercel-supabase-final",
+  "version": "4.0.0",
   "private": true,
-  "description": "XLIMSTORE mini app storefront for Vercel.",
+  "description": "XLIMSTORE full Vercel app with Supabase database/storage and secure admin API routes.",
+  "type": "commonjs",
   "scripts": {
     "build": "node scripts/build.js",
-    "start": "node scripts/build.js && npx serve dist",
-    "check": "node scripts/build.js"
+    "check": "node scripts/check.js",
+    "hash:admin": "node scripts/hash-admin-password.js"
   },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.48.1",
+    "formidable": "^3.5.2"
   },
   "devDependencies": {}
 }
