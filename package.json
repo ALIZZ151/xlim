@@ -1,8 +1,8 @@
 {
   "name": "xlimstore-vercel-supabase-final",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "private": true,
-  "description": "XLIMSTORE full Vercel app with Supabase database/storage and secure admin API routes.",
+  "description": "XLIMSTORE full Vercel app with Supabase database/storage and a single serverless API router for Vercel Hobby limits.",
   "type": "commonjs",
   "scripts": {
     "build": "node scripts/build.js",
@@ -10,7 +10,7 @@
     "hash:admin": "node scripts/hash-admin-password.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": "20.x"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.48.1",
