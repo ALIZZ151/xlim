@@ -5,17 +5,17 @@ const pathMod = require('path');
 let formidablePkg = require('formidable');
 const formidable = formidablePkg.formidable || formidablePkg;
 
-const { withApi, ok, methodNotAllowed, ApiError } = require('./_lib/responses');
-const { publicConfig, requiredEnvStatus, config } = require('./_lib/config');
-const { getSupabaseAdmin, mapDbError } = require('./_lib/supabase');
+const { withApi, ok, methodNotAllowed, ApiError } = require('../server/_lib/responses');
+const { publicConfig, requiredEnvStatus, config } = require('../server/_lib/config');
+const { getSupabaseAdmin, mapDbError } = require('../server/_lib/supabase');
 const {
   readJsonBody, sanitizeText, clientHashes, buildOrderMessage, publicProduct,
   productFromBody, sha256, randomId,
-} = require('./_lib/utils');
+} = require('../server/_lib/utils');
 const {
   verifyPassword, createSession, setAdminCookie, clearAdminCookie, parseLoginBody,
   requireAdmin, audit, checkRateLimit, recordRateFailure, resetRateLimit, requestIntegrityHash,
-} = require('./_lib/auth');
+} = require('../server/_lib/auth');
 
 const ALLOWED_UPLOADS = new Map([
   ['image/jpeg', 'jpg'],
