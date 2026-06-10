@@ -32,6 +32,7 @@
     { "source": "/rating", "destination": "/index.html" },
     { "source": "/admin", "destination": "/index.html" },
     { "source": "/invoice", "destination": "/index.html" },
-    { "source": "/payment/success", "destination": "/index.html" }
+    { "source": "/payment/success", "destination": "/index.html" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
