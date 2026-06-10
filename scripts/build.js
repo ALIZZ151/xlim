@@ -18,6 +18,13 @@ function copyDir(src, dest) {
   }
 }
 
+function copySpaRoute(route) {
+  const indexFile = path.join(distDir, 'index.html');
+  const targetDir = path.join(distDir, route);
+  fs.mkdirSync(targetDir, { recursive: true });
+  fs.copyFileSync(indexFile, path.join(targetDir, 'index.html'));
+}
+
 fs.rmSync(distDir, { recursive: true, force: true });
 copyDir(publicDir, distDir);
 
@@ -33,7 +40,9 @@ const config = `window.XLIMSTORE_CONFIG = ${JSON.stringify({
 }, null, 2)};\n`;
 fs.writeFileSync(path.join(distDir, 'config.js'), config);
 
-const sitemap = `https://xlim.alizz.my.id/\nhttps://xlim.alizz.my.id/demo\nhttps://xlim.alizz.my.id/produk\nhttps://xlim.alizz.my.id/rating\nhttps://xlim.alizz.my.id/invoice\n`
+['demo', 'produk', 'rating', 'admin', 'invoice', 'payment', 'payment/success'].forEach(copySpaRoute);
+
+const sitemap = `https://xlim.alizz.my.id/\nhttps://xlim.alizz.my.id/demo\nhttps://xlim.alizz.my.id/produk\nhttps://xlim.alizz.my.id/rating\nhttps://xlim.alizz.my.id/admin\nhttps://xlim.alizz.my.id/invoice\n`
   .replaceAll('https://xlim.alizz.my.id', siteUrl)
   .trim()
   .split('\n')
