@@ -1,7 +1,7 @@
 'use strict';
 
 const { withApi, ok, methodNotAllowed, ApiError } = require('../server/_lib/responses');
-const { getSupabaseAdmin, mapDbError } = require('../server/_lib/supabase');
+const { getSupabaseAdmin } = require('../server/_lib/supabase');
 const { readJsonBody, sanitizeText, clientHashes } = require('../server/_lib/utils');
 const { audit, checkRateLimit, recordRateFailure } = require('../server/_lib/auth');
 
@@ -12,34 +12,36 @@ module.exports = withApi(async (req, res) => {
 });
 
 async function getRatings(res) {
-  const supabase = getSupabaseAdmin();
-  let result = await supabase
-    .from('ratings')
-    .select('id,name,rating,comment,avatar_url,created_at,is_visible')
-    .eq('is_visible', true)
-    .order('created_at', { ascending: false })
-    .limit(40);
-
-  if (isSchemaFallback(result.error)) {
-    safeLog('warn', 'ratings_schema_fallback', result.error);
-    result = await supabase
+  const empty = () => ok(res, { ratings: [], average: 0, count: 0, data: [] });
+  try {
+    const supabase = getSupabaseAdmin();
+    let result = await supabase
       .from('ratings')
-      .select('id,name,rating,comment,avatar_url,created_at')
+      .select('id,name,rating,comment,avatar_url,created_at,is_visible')
+      .eq('is_visible', true)
       .order('created_at', { ascending: false })
       .limit(40);
-  }
 
-  if (result.error) {
-    safeLog('error', 'ratings_query_failed', result.error);
-    throw mapDbError(result.error, 'Gagal mengambil rating.');
-  }
+    if (result.error) {
+      console.warn('[xlim-api] ratings primary query failed', { code: result.error.code, message: result.error.message });
+      result = await supabase.from('ratings').select('id,name,rating,comment,avatar_url,created_at').limit(40);
+    }
+    if (result.error) {
+      console.error('[xlim-api] ratings fallback query failed', { code: result.error.code, message: result.error.message });
+      return empty();
+    }
 
-  const ratings = (result.data || [])
-    .filter((row) => row && row.is_visible !== false)
-    .map(({ is_visible, ...rating }) => rating);
-  const count = ratings.length;
-  const average = count ? Number((ratings.reduce((sum, item) => sum + Number(item.rating || 0), 0) / count).toFixed(1)) : 0;
-  ok(res, { ratings, average, count, data: ratings });
+    const ratings = (result.data || [])
+      .filter((row) => row && row.is_visible !== false)
+      .map(({ is_visible, ...rating }) => rating)
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    const count = ratings.length;
+    const average = count ? Number((ratings.reduce((sum, item) => sum + Number(item.rating || 0), 0) / count).toFixed(1)) : 0;
+    return ok(res, { ratings, average, count, data: ratings });
+  } catch (error) {
+    console.error('[xlim-api] ratings handler failed', { name: error.name, code: error.code, message: error.message });
+    return empty();
+  }
 }
 
 async function postRating(req, res) {
@@ -67,29 +69,10 @@ async function postRating(req, res) {
 
   if (error) {
     await recordRateFailure(key, 2, 10 * 60 * 1000);
-    throw mapDbError(error, 'Gagal menyimpan rating.');
+    throw new ApiError('Gagal menyimpan rating.', 500, 'RATING_SAVE_FAILED');
   }
 
   await recordRateFailure(key, 2, 10 * 60 * 1000);
   await audit('rating_created', req, { id: data?.id, rating });
   ok(res, { rating: data, message: 'Rating masuk. Makasih sudah mampir!' }, 201);
-}
-
-function isSchemaFallback(error) {
-  return error && (
-    error.code === '42703' ||
-    error.code === 'PGRST204' ||
-    /column .* does not exist/i.test(String(error.message || ''))
-  );
-}
-
-function safeLog(level, event, error) {
-  const payload = {
-    event,
-    code: error?.code,
-    message: error?.message ? String(error.message).slice(0, 180) : undefined,
-    hint: error?.hint ? String(error.hint).slice(0, 180) : undefined,
-  };
-  const writer = level === 'error' ? console.error : console.warn;
-  writer(`[xlim-api] ${event}`, payload);
 }
