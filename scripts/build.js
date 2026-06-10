@@ -33,7 +33,7 @@ const config = `window.XLIMSTORE_CONFIG = ${JSON.stringify({
 }, null, 2)};\n`;
 fs.writeFileSync(path.join(distDir, 'config.js'), config);
 
-const sitemap = `https://xlim.alizz.my.id/\nhttps://xlim.alizz.my.id/demo\nhttps://xlim.alizz.my.id/produk\nhttps://xlim.alizz.my.id/rating\n`
+const sitemap = `https://xlim.alizz.my.id/\nhttps://xlim.alizz.my.id/demo\nhttps://xlim.alizz.my.id/produk\nhttps://xlim.alizz.my.id/rating\nhttps://xlim.alizz.my.id/invoice\n`
   .replaceAll('https://xlim.alizz.my.id', siteUrl)
   .trim()
   .split('\n')

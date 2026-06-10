@@ -57,6 +57,17 @@ const config = {
   whatsappNumber: digits(process.env.WHATSAPP_NUMBER || '6283193075449'),
   telegramUsername: String(process.env.TELEGRAM_USERNAME || 'xlimstor').replace(/^@/, ''),
   maxUploadBytes: Math.min(int('MAX_UPLOAD_BYTES', 3 * 1024 * 1024), 10 * 1024 * 1024),
+
+  pakasirProject: process.env.PAKASIR_PROJECT || process.env.PAKASIR_SLUG || '',
+  pakasirSlug: process.env.PAKASIR_SLUG || process.env.PAKASIR_PROJECT || '',
+  pakasirApiKey: process.env.PAKASIR_API_KEY || '',
+  pakasirDefaultMethod: String(process.env.PAKASIR_DEFAULT_METHOD || 'qris').toLowerCase(),
+  pakasirQrisOnly: bool('PAKASIR_QRIS_ONLY', true),
+  pakasirPaymentBaseUrl: trimSlash(process.env.PAKASIR_PAYMENT_BASE_URL || 'https://app.pakasir.com'),
+  pakasirWebhookEnabled: bool('PAKASIR_WEBHOOK_ENABLED', true),
+  pakasirFlow: String(process.env.PAKASIR_FLOW || 'api').toLowerCase() === 'redirect' ? 'redirect' : 'api',
+  pakasirSandboxEnabled: bool('PAKASIR_SANDBOX_ENABLED', false),
+  pakasirTimeoutMs: Math.max(3000, Math.min(int('PAKASIR_TIMEOUT_MS', 15000), 30000)),
 };
 
 function publicConfig() {
@@ -72,6 +83,8 @@ function publicConfig() {
       googleLogin: false,
       supabase: Boolean(config.supabaseUrl),
       manualOrder: true,
+      automaticPayment: Boolean(config.pakasirProject),
+      pakasir: Boolean(config.pakasirProject),
     },
   };
 }
@@ -88,6 +101,11 @@ function requiredEnvStatus() {
     adminApiHashSecret: Boolean(config.adminApiHashSecret),
     whatsappNumber: Boolean(config.whatsappNumber),
     telegramUsername: Boolean(config.telegramUsername),
+    pakasirProject: Boolean(config.pakasirProject),
+    pakasirApiKey: Boolean(config.pakasirApiKey),
+    pakasirDefaultMethod: config.pakasirDefaultMethod,
+    pakasirFlow: config.pakasirFlow,
+    pakasirWebhookEnabled: config.pakasirWebhookEnabled,
   };
 }
 

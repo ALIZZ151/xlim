@@ -16,6 +16,9 @@ const {
   verifyPassword, createSession, setAdminCookie, clearAdminCookie, parseLoginBody,
   requireAdmin, audit, checkRateLimit, recordRateFailure, resetRateLimit, requestIntegrityHash,
 } = require('../server/_lib/auth');
+const {
+  createTransaction, transactionDetail, paymentSimulation, cancelTransaction, buildPaymentUrl, normalizeMethod,
+} = require('../server/_lib/pakasir');
 
 const ALLOWED_UPLOADS = new Map([
   ['image/jpeg', 'jpg'],
@@ -34,11 +37,19 @@ module.exports = withApi(async (req, res) => {
 
   if (route === '/api/ratings') return ratings(req, res);
   if (route === '/api/orders/contact') return contactOrder(req, res);
+  if (route === '/api/orders/create') return createOrder(req, res);
+  if (route === '/api/payments/create') return createPaymentRoute(req, res);
+  if (route === '/api/orders/status') return orderStatus(req, res);
+  if (route === '/api/webhooks/pakasir') return pakasirWebhook(req, res);
+  if (route === '/api/payments/simulate') return simulatePayment(req, res);
+  if (route === '/api/payments/cancel') return cancelPayment(req, res);
 
   if (route === '/api/admin/login') return adminLogin(req, res);
   if (route === '/api/admin/logout') return adminLogout(req, res);
   if (route === '/api/admin/me') return adminMe(req, res);
   if (route === '/api/admin/audit') return adminAudit(req, res);
+  if (route === '/api/admin/orders') return adminOrders(req, res);
+  if (route.startsWith('/api/admin/orders/')) return adminOrderById(req, res, routeParam(route, '/api/admin/orders/'));
   if (route === '/api/admin/upload') return adminUpload(req, res);
   if (route === '/api/admin/products') return adminProducts(req, res);
   if (route.startsWith('/api/admin/products/')) return adminProductById(req, res, routeParam(route, '/api/admin/products/'));
@@ -190,6 +201,300 @@ async function contactOrder(req, res) {
     links: { whatsapp: whatsappUrl, telegram: telegramUrl },
     targetUrl: method === 'telegram' ? telegramUrl : whatsappUrl,
   }, 201);
+}
+
+
+async function createOrder(req, res) {
+  if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);
+  const body = await readJsonBody(req);
+  const meta = clientHashes(req);
+  const rateKey = `order_create:${meta.fingerprint}`;
+  await checkRateLimit(rateKey, 8, 5 * 60 * 1000, 5 * 60 * 1000);
+
+  const productId = sanitizeText(body.productId || body.product_id || body.id || body.slug, 120);
+  const customerName = sanitizeText(body.customerName || body.customer_name || body.name, 70);
+  const customerContact = sanitizeText(body.customerContact || body.customer_contact || body.contact || '', 90);
+  const customerNote = sanitizeText(body.customerNote || body.customer_note || body.note || '', 280);
+  const requestedMethod = normalizeMethod(body.paymentMethod || body.payment_method || config.pakasirDefaultMethod);
+
+  if (!productId) throw new ApiError('Produk wajib dipilih.', 400, 'VALIDATION_ERROR');
+  if (customerName.length < 2) throw new ApiError('Nama pembeli minimal 2 karakter.', 400, 'VALIDATION_ERROR');
+
+  const row = await findProduct(productId, { activeOnly: true });
+  if (row.status === 'soldout' || row.status === 'inactive') throw new ApiError('Produk ini belum bisa dibeli otomatis.', 409, 'PRODUCT_UNAVAILABLE');
+  const amount = Number(row.price || 0);
+  if (!Number.isInteger(amount) || amount <= 0) throw new ApiError('Harga produk belum valid untuk checkout otomatis.', 400, 'BAD_PRODUCT_PRICE');
+
+  const supabase = getSupabaseAdmin();
+  let orderId = makeOrderId();
+  let inserted = null;
+  let insertError = null;
+  for (let i = 0; i < 4; i += 1) {
+    orderId = i === 0 ? orderId : makeOrderId();
+    const result = await supabase.from('orders').insert({
+      order_id: orderId,
+      product_id: row.id,
+      product_name: row.name,
+      customer_name: customerName,
+      customer_contact: customerContact || null,
+      customer_note: customerNote || null,
+      amount,
+      status: 'pending',
+      source: 'website',
+    }).select('*').single();
+    if (!result.error) { inserted = result.data; insertError = null; break; }
+    insertError = result.error;
+    if (result.error.code !== '23505') break;
+  }
+  if (!inserted) throw mapDbError(insertError, 'Gagal membuat order.');
+
+  await recordRateFailure(rateKey, 8, 5 * 60 * 1000);
+  await audit('order_created', req, { orderId: inserted.order_id, productId: row.id, amount });
+
+  const payment = await createPaymentForOrder(inserted, requestedMethod, req);
+  ok(res, {
+    order: publicOrder(inserted, payment),
+    payment: publicPayment(payment),
+    message: 'Invoice berhasil dibuat. Lanjutkan pembayaran sebelum expired.',
+  }, 201);
+}
+
+async function createPaymentRoute(req, res) {
+  if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);
+  const body = await readJsonBody(req);
+  const orderId = sanitizeText(body.orderId || body.order_id, 80).toUpperCase();
+  const method = normalizeMethod(body.paymentMethod || body.payment_method || config.pakasirDefaultMethod);
+  if (!isOrderId(orderId)) throw new ApiError('Order ID tidak valid.', 400, 'BAD_ORDER_ID');
+  const { order, payment } = await getOrderWithPayment(orderId);
+  if (!order) throw new ApiError('Order tidak ditemukan.', 404, 'ORDER_NOT_FOUND');
+  if (order.status !== 'pending') throw new ApiError('Order ini sudah tidak pending.', 409, 'ORDER_NOT_PENDING');
+  if (payment?.status === 'pending' && payment.payment_number) {
+    return ok(res, { order: publicOrder(order, payment), payment: publicPayment(payment), reused: true });
+  }
+  const newPayment = await createPaymentForOrder(order, method, req);
+  ok(res, { order: publicOrder(order, newPayment), payment: publicPayment(newPayment) }, 201);
+}
+
+async function createPaymentForOrder(order, method, req) {
+  const supabase = getSupabaseAdmin();
+  const paymentUrl = buildPaymentUrl({ orderId: order.order_id, amount: order.amount, redirect: redirectFor(order.order_id) });
+  let providerPayment = {
+    project: config.pakasirProject,
+    order_id: order.order_id,
+    amount: Number(order.amount),
+    fee: 0,
+    total_payment: Number(order.amount),
+    payment_method: method,
+    payment_number: '',
+    expired_at: null,
+  };
+  let raw = { flow: config.pakasirFlow, payment_url: paymentUrl };
+
+  if (config.pakasirFlow === 'api') {
+    const created = await createTransaction({ method, orderId: order.order_id, amount: order.amount });
+    providerPayment = { ...providerPayment, ...(created.payment || {}) };
+    raw = { ...created.raw, payment_url: paymentUrl };
+  }
+
+  const payload = {
+    order_id: order.order_id,
+    provider: 'pakasir',
+    provider_project: config.pakasirProject,
+    payment_method: providerPayment.payment_method || method,
+    amount: Number(providerPayment.amount || order.amount),
+    fee: Number(providerPayment.fee || 0),
+    total_payment: Number(providerPayment.total_payment || providerPayment.amount || order.amount),
+    payment_number: providerPayment.payment_number || '',
+    payment_url: paymentUrl,
+    status: 'pending',
+    expired_at: providerPayment.expired_at || null,
+    raw_response: raw,
+  };
+
+  const { data, error } = await supabase.from('payments').upsert(payload, { onConflict: 'order_id,provider' }).select('*').single();
+  if (error) throw mapDbError(error, 'Gagal menyimpan data payment.');
+  if (data.expired_at && !order.expired_at) {
+    await supabase.from('orders').update({ expired_at: data.expired_at }).eq('order_id', order.order_id);
+  }
+  await audit('payment_created', req, { orderId: order.order_id, method: data.payment_method, amount: data.amount, totalPayment: data.total_payment });
+  return data;
+}
+
+async function orderStatus(req, res) {
+  if (req.method !== 'GET') return methodNotAllowed(res, ['GET']);
+  const meta = clientHashes(req);
+  const rateKey = `order_status:${meta.fingerprint}`;
+  await checkRateLimit(rateKey, 60, 60 * 1000, 60 * 1000);
+  const orderId = queryParam(req, 'order_id').toUpperCase();
+  if (!isOrderId(orderId)) throw new ApiError('Order ID tidak valid.', 400, 'BAD_ORDER_ID');
+  const { order, payment } = await getOrderWithPayment(orderId);
+  if (!order) throw new ApiError('Order tidak ditemukan.', 404, 'ORDER_NOT_FOUND');
+
+  if (order.status === 'pending' && payment?.expired_at && new Date(payment.expired_at) < new Date()) {
+    await getSupabaseAdmin().from('orders').update({ status: 'expired', expired_at: payment.expired_at }).eq('order_id', order.order_id).eq('status', 'pending');
+    await getSupabaseAdmin().from('payments').update({ status: 'expired' }).eq('order_id', order.order_id).eq('status', 'pending');
+    order.status = 'expired';
+    payment.status = 'expired';
+  }
+  await recordRateFailure(rateKey, 60, 60 * 1000);
+  ok(res, { order: publicOrder(order, payment), payment: payment ? publicPayment(payment) : null });
+}
+
+async function getOrderWithPayment(orderId) {
+  const supabase = getSupabaseAdmin();
+  const { data: order, error } = await supabase.from('orders').select('*').eq('order_id', orderId).maybeSingle();
+  if (error) throw mapDbError(error, 'Gagal mengambil order.');
+  if (!order) return { order: null, payment: null };
+  const { data: payment, error: payError } = await supabase.from('payments').select('*').eq('order_id', orderId).maybeSingle();
+  if (payError) throw mapDbError(payError, 'Gagal mengambil payment.');
+  return { order, payment };
+}
+
+async function pakasirWebhook(req, res) {
+  if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);
+  const payload = await readJsonBody(req, 256 * 1024);
+  const supabase = getSupabaseAdmin();
+  const orderId = sanitizeText(payload.order_id || payload.orderId, 90).toUpperCase();
+  const amount = Number(payload.amount || 0);
+  const project = sanitizeText(payload.project, 120);
+  const status = sanitizeText(payload.status, 60).toLowerCase();
+  const paymentMethod = sanitizeText(payload.payment_method || payload.paymentMethod, 60).toLowerCase();
+  const completedAt = payload.completed_at || payload.completedAt || null;
+
+  const { data: log } = await supabase.from('payment_webhook_logs').insert({
+    provider: 'pakasir',
+    order_id: orderId || null,
+    amount: Number.isFinite(amount) ? amount : null,
+    project: project || null,
+    status: status || null,
+    payment_method: paymentMethod || null,
+    completed_at: completedAt || null,
+    is_valid: false,
+    validation_message: 'received',
+    raw_payload: payload || {},
+  }).select('*').single();
+  await audit('webhook_received', req, { provider: 'pakasir', orderId, amount, project, status });
+
+  async function invalid(message, code = 'WEBHOOK_INVALID') {
+    if (log?.id) await supabase.from('payment_webhook_logs').update({ validation_message: message, is_valid: false }).eq('id', log.id);
+    await audit('webhook_invalid', req, { orderId, message });
+    throw new ApiError(message, 400, code);
+  }
+
+  if (!config.pakasirWebhookEnabled) return ok(res, { ignored: true, message: 'Webhook Pakasir sedang dinonaktifkan.' });
+  if (!isOrderId(orderId)) return invalid('Order ID webhook tidak valid.');
+  if (project !== config.pakasirProject) return invalid('Project Pakasir tidak cocok.');
+  if (!Number.isInteger(amount) || amount <= 0) return invalid('Amount webhook tidak valid.');
+  if (status !== 'completed') return invalid('Status webhook bukan completed.');
+
+  const { order, payment } = await getOrderWithPayment(orderId);
+  if (!order) return invalid('Order tidak ditemukan di database.', 'ORDER_NOT_FOUND');
+  if (Number(order.amount) !== amount) return invalid('Amount webhook tidak cocok dengan order.');
+
+  if (order.status === 'paid') {
+    if (log?.id) await supabase.from('payment_webhook_logs').update({ is_valid: true, validation_message: 'already_paid' }).eq('id', log.id);
+    return ok(res, { processed: false, alreadyPaid: true });
+  }
+
+  const detail = await transactionDetail({ orderId, amount });
+  const transaction = detail.transaction || {};
+  const txStatus = sanitizeText(transaction.status, 60).toLowerCase();
+  const txOrderId = sanitizeText(transaction.order_id || transaction.orderId, 90).toUpperCase();
+  const txAmount = Number(transaction.amount || 0);
+  const txProject = sanitizeText(transaction.project, 120);
+  if (txStatus !== 'completed' || txOrderId !== orderId || txAmount !== amount || txProject !== config.pakasirProject) {
+    return invalid('Transaction Detail API tidak memvalidasi webhook.', 'WEBHOOK_DETAIL_MISMATCH');
+  }
+
+  let completedIso = new Date().toISOString();
+  if (completedAt) {
+    const parsedCompleted = new Date(completedAt);
+    if (!Number.isNaN(parsedCompleted.getTime())) completedIso = parsedCompleted.toISOString();
+  }
+  await supabase.from('orders').update({ status: 'paid', paid_at: completedIso }).eq('order_id', orderId).in('status', ['pending', 'failed']);
+  await supabase.from('payments').update({
+    status: 'completed',
+    completed_at: completedIso,
+    payment_method: paymentMethod || payment?.payment_method || transaction.payment_method || null,
+    raw_response: { webhook: payload, detail: detail.raw },
+  }).eq('order_id', orderId);
+  if (log?.id) await supabase.from('payment_webhook_logs').update({ is_valid: true, validation_message: 'completed' }).eq('id', log.id);
+  await audit('payment_completed', req, { orderId, amount, method: paymentMethod || transaction.payment_method });
+  ok(res, { processed: true, orderId, status: 'paid' });
+}
+
+async function simulatePayment(req, res) {
+  if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);
+  if (config.isProd && !config.pakasirSandboxEnabled) {
+    throw new ApiError('Payment simulation hanya aktif di non-production atau saat PAKASIR_SANDBOX_ENABLED=true.', 403, 'SIMULATION_DISABLED');
+  }
+  const body = await readJsonBody(req);
+  const orderId = sanitizeText(body.orderId || body.order_id, 90).toUpperCase();
+  if (!isOrderId(orderId)) throw new ApiError('Order ID tidak valid.', 400, 'BAD_ORDER_ID');
+  const { order } = await getOrderWithPayment(orderId);
+  if (!order) throw new ApiError('Order tidak ditemukan.', 404, 'ORDER_NOT_FOUND');
+  const data = await paymentSimulation({ orderId, amount: order.amount });
+  await audit('payment_simulated', req, { orderId, amount: order.amount });
+  ok(res, { data, message: 'Simulasi payment dikirim ke Pakasir sandbox.' });
+}
+
+async function cancelPayment(req, res) {
+  if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);
+  const body = await readJsonBody(req);
+  const orderId = sanitizeText(body.orderId || body.order_id, 90).toUpperCase();
+  if (!isOrderId(orderId)) throw new ApiError('Order ID tidak valid.', 400, 'BAD_ORDER_ID');
+  const { order } = await getOrderWithPayment(orderId);
+  if (!order) throw new ApiError('Order tidak ditemukan.', 404, 'ORDER_NOT_FOUND');
+  if (order.status !== 'pending') throw new ApiError('Order sudah tidak pending.', 409, 'ORDER_NOT_PENDING');
+  const data = await cancelTransaction({ orderId, amount: order.amount });
+  await getSupabaseAdmin().from('orders').update({ status: 'cancelled' }).eq('order_id', orderId).eq('status', 'pending');
+  await getSupabaseAdmin().from('payments').update({ status: 'cancelled', raw_response: { cancel: data } }).eq('order_id', orderId);
+  await audit('payment_cancelled', req, { orderId, amount: order.amount });
+  ok(res, { data, orderId, status: 'cancelled', message: 'Order dibatalkan.' });
+}
+
+async function adminOrders(req, res) {
+  if (req.method !== 'GET') return methodNotAllowed(res, ['GET']);
+  await requireAdmin(req, { requireNonce: false });
+  const status = queryParam(req, 'status').toLowerCase();
+  let query = getSupabaseAdmin().from('orders').select('*').order('created_at', { ascending: false }).limit(100);
+  if (['pending', 'paid', 'expired', 'cancelled', 'failed'].includes(status)) query = query.eq('status', status);
+  const { data, error } = await query;
+  if (error) throw mapDbError(error, 'Gagal mengambil order admin.');
+  const orderIds = (data || []).map((x) => x.order_id);
+  let payments = [];
+  if (orderIds.length) {
+    const payRes = await getSupabaseAdmin().from('payments').select('*').in('order_id', orderIds);
+    if (!payRes.error) payments = payRes.data || [];
+  }
+  const payMap = new Map(payments.map((p) => [p.order_id, p]));
+  ok(res, { orders: (data || []).map((o) => publicOrder(o, payMap.get(o.order_id))), count: (data || []).length });
+}
+
+async function adminOrderById(req, res, orderIdRaw) {
+  const orderId = sanitizeText(orderIdRaw, 90).toUpperCase();
+  if (!isOrderId(orderId)) throw new ApiError('Order ID tidak valid.', 400, 'BAD_ORDER_ID');
+  if (req.method === 'GET') {
+    await requireAdmin(req, { requireNonce: false });
+    const { order, payment } = await getOrderWithPayment(orderId);
+    if (!order) throw new ApiError('Order tidak ditemukan.', 404, 'ORDER_NOT_FOUND');
+    return ok(res, { order: publicOrder(order, payment), payment: payment ? publicPayment(payment) : null });
+  }
+  if (req.method === 'PATCH') {
+    await requireAdmin(req);
+    const body = await readJsonBody(req);
+    const status = sanitizeText(body.status, 40).toLowerCase();
+    if (!['pending', 'paid', 'expired', 'cancelled', 'failed'].includes(status)) throw new ApiError('Status order tidak valid.', 400, 'BAD_STATUS');
+    const patch = { status };
+    if (status === 'paid') patch.paid_at = new Date().toISOString();
+    const { data, error } = await getSupabaseAdmin().from('orders').update(patch).eq('order_id', orderId).select('*').single();
+    if (error) throw mapDbError(error, 'Gagal update order.');
+    if (status === 'paid') await getSupabaseAdmin().from('payments').update({ status: 'completed', completed_at: patch.paid_at }).eq('order_id', orderId);
+    await audit('order_updated', req, { orderId, status });
+    const { payment } = await getOrderWithPayment(orderId);
+    return ok(res, { order: publicOrder(data, payment), message: 'Order berhasil diupdate.' });
+  }
+  return methodNotAllowed(res, ['GET', 'PATCH']);
 }
 
 async function adminLogin(req, res) {
