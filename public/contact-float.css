@@ -1,0 +1,114 @@
+/* Premium floating contact buttons */
+.contact-float {
+  right: max(16px, env(safe-area-inset-right));
+  bottom: calc(112px + env(safe-area-inset-bottom));
+  gap: 12px;
+  z-index: 55;
+}
+
+.contact-float::before {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border-radius: 30px;
+  background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.035));
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 22px 58px rgba(0,0,0,.42);
+  backdrop-filter: blur(18px);
+  opacity: .72;
+  pointer-events: none;
+}
+
+.contact-float button {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  border-radius: 23px;
+  border: 1px solid rgba(255,255,255,.18);
+  overflow: hidden;
+  isolation: isolate;
+  transform: translateZ(0);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+
+.contact-float button::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 21px;
+  background: linear-gradient(145deg, rgba(255,255,255,.24), rgba(255,255,255,0) 44%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.contact-float button:hover,
+.contact-float button:focus-visible {
+  transform: translateY(-2px) scale(1.025);
+  border-color: rgba(255,255,255,.34);
+  box-shadow: 0 20px 54px rgba(0,0,0,.46);
+}
+
+#floatWa {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.32), transparent 34%),
+    linear-gradient(145deg, #24ec70, #08a83e 58%, #047a33);
+  box-shadow: 0 18px 46px rgba(18, 214, 92, .26), 0 18px 56px rgba(0,0,0,.45);
+}
+
+#floatWa img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 15px rgba(0,0,0,.22));
+  z-index: 1;
+}
+
+#floatTg {
+  background:
+    radial-gradient(circle at 32% 18%, rgba(255,255,255,.38), transparent 32%),
+    linear-gradient(145deg, #35c9ff, #229fe4 55%, #1682c9);
+  box-shadow: 0 18px 46px rgba(34, 159, 228, .28), 0 18px 56px rgba(0,0,0,.45);
+}
+
+#floatTg span {
+  display: none !important;
+}
+
+#floatTg::before {
+  content: "";
+  position: relative;
+  z-index: 1;
+  width: 48px;
+  height: 48px;
+  display: block;
+  background-image: url("data:image/webp;base64,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");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 8px 15px rgba(0,0,0,.22));
+}
+
+@media (min-width: 961px) {
+  .contact-float {
+    bottom: 28px;
+    right: 28px;
+  }
+}
+
+@media (max-width: 420px) {
+  .contact-float {
+    right: 12px;
+    bottom: calc(108px + env(safe-area-inset-bottom));
+    gap: 10px;
+  }
+  .contact-float button {
+    width: 58px;
+    height: 58px;
+    border-radius: 21px;
+  }
+  #floatWa img,
+  #floatTg::before {
+    width: 44px;
+    height: 44px;
+  }
+}
