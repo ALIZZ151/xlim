@@ -1,12 +1,13 @@
 import { supabase } from './supabase-client.js';
 
-const BRAND_NAME = 'XLIM STORE';
 const WELCOME_KEY = 'xlim_welcome_closed_session';
 
 let currentUser = null;
+
 let ratingState = {
   selectedStars: 5,
-  ratings: []
+  ratings: [],
+  draftExperience: null
 };
 
 let profileOrders = [];
@@ -115,6 +116,7 @@ function injectFinalStyles() {
     .xlim-welcome-card,
     .xlim-route-card {
       box-shadow: 0 18px 55px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.04);
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease, background .25s ease;
     }
 
     .ultra-card:hover,
@@ -127,43 +129,27 @@ function injectFinalStyles() {
       box-shadow: 0 26px 75px rgba(14,165,233,.16), inset 0 1px 0 rgba(255,255,255,.07);
     }
 
-    .btn-super,
-    .btn-outline-super,
-    button,
-    a {
+    .tap-target {
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, background .22s ease;
       -webkit-tap-highlight-color: transparent;
     }
 
-    .btn-super:active,
-    .btn-outline-super:active,
-    .social-link:active,
-    .mobile-link:active,
-    .nav-link:active {
-      transform: scale(.97);
+    .tap-target.is-pressing {
+      transform: scale(.985);
     }
 
-    .tap-target {
-      position: relative;
-      overflow: hidden;
+    .product-card.is-pressing,
+    .ultra-card.is-pressing,
+    .rating-card.is-pressing,
+    .xlim-route-card.is-pressing {
+      transform: translateY(-4px) scale(.992);
+      border-color: rgba(56,189,248,.32) !important;
+      box-shadow: 0 22px 62px rgba(14,165,233,.16);
     }
 
-    .tap-ripple {
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      border-radius: 999px;
-      background: rgba(224,242,254,.34);
-      transform: translate(-50%, -50%) scale(0);
-      pointer-events: none;
-      animation: xlimTapRipple .58s ease-out forwards;
-      z-index: 15;
-    }
-
-    @keyframes xlimTapRipple {
-      to {
-        transform: translate(-50%, -50%) scale(18);
-        opacity: 0;
-      }
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
     }
 
     #backToTop,
@@ -571,6 +557,32 @@ function injectFinalStyles() {
       font-size: 13px;
     }
 
+    .rating-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .rating-action-btn {
+      min-height: 38px;
+      padding: 0 13px;
+      border-radius: 13px;
+      border: 1px solid rgba(148,163,184,.14);
+      background: rgba(255,255,255,.05);
+      color: #e0f2fe;
+      font-weight: 900;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .rating-action-btn.danger {
+      color: #fecaca;
+      border-color: rgba(239,68,68,.22);
+      background: rgba(239,68,68,.10);
+    }
+
     .xlim-profile-grid {
       display: grid;
       grid-template-columns: 420px minmax(0, 1fr);
@@ -873,6 +885,15 @@ function injectFinalStyles() {
       .xlim-profile-stats {
         grid-template-columns: 1fr;
       }
+
+      .rating-actions {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .rating-action-btn {
+        justify-content: center;
+      }
     }
   `;
   document.head.appendChild(style);
@@ -908,6 +929,11 @@ function escapeHtml(value = '') {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
+}
+
+function getOwnRating() {
+  if (!currentUser) return null;
+  return ratingState.ratings.find((item) => item.user_id === currentUser.id) || null;
 }
 
 function removeBadFooterAccount() {
@@ -1241,23 +1267,17 @@ function initCardSpotlight() {
 function initTouchEffect() {
   document.querySelectorAll('a, button, .ultra-card, .product-card, .stat-card, .mobile-link, .nav-link, .rating-card, .xlim-route-card').forEach((target) => {
     if (target.dataset.tapReady === 'true') return;
+
     target.dataset.tapReady = 'true';
     target.classList.add('tap-target');
 
-    target.addEventListener('pointerdown', (event) => {
-      if (event.button !== undefined && event.button !== 0) return;
+    const clear = () => target.classList.remove('is-pressing');
 
-      const rect = target.getBoundingClientRect();
-      const ripple = document.createElement('span');
-
-      ripple.className = 'tap-ripple';
-      ripple.style.left = `${event.clientX - rect.left}px`;
-      ripple.style.top = `${event.clientY - rect.top}px`;
-
-      target.appendChild(ripple);
-
-      setTimeout(() => ripple.remove(), 620);
-    });
+    target.addEventListener('pointerdown', () => target.classList.add('is-pressing'));
+    target.addEventListener('pointerup', clear);
+    target.addEventListener('pointercancel', clear);
+    target.addEventListener('pointerleave', clear);
+    target.addEventListener('blur', clear);
   });
 }
 
@@ -1574,6 +1594,14 @@ function renderRatingPanel() {
 
   const name = getDisplayName(currentUser);
   const avatar = getAvatar(currentUser);
+  const ownRating = getOwnRating();
+
+  if (ownRating && ratingState.draftExperience === null) {
+    ratingState.selectedStars = Number(ownRating.stars || 5);
+  }
+
+  const textValue = ratingState.draftExperience !== null ? ratingState.draftExperience : ownRating?.experience || '';
+  const buttonText = ownRating ? 'Update Rating' : 'Kirim Rating';
 
   panel.innerHTML = `
     <div class="xlim-rating-user">
@@ -1591,22 +1619,31 @@ function renderRatingPanel() {
           </button>
         `).join('')}
       </div>
-      <textarea id="xlimRatingText" maxlength="500" placeholder="Ceritakan pengalaman kamu menggunakan XLIM STORE..."></textarea>
+      <textarea id="xlimRatingText" maxlength="500" placeholder="Ceritakan pengalaman kamu menggunakan XLIM STORE...">${escapeHtml(textValue)}</textarea>
       <button class="xlim-rating-submit" type="submit">
         <i class="ri-send-plane-fill"></i>
-        Kirim Rating
+        ${buttonText}
       </button>
+      ${ownRating ? `
+        <button class="xlim-profile-danger" type="button" id="deleteOwnRatingBtn">
+          <i class="ri-delete-bin-line"></i>
+          Hapus Rating Saya
+        </button>
+      ` : ''}
     </form>
   `;
 
   panel.querySelectorAll('[data-star]').forEach((btn) => {
     btn.addEventListener('click', () => {
+      const textarea = document.getElementById('xlimRatingText');
+      ratingState.draftExperience = textarea?.value || '';
       ratingState.selectedStars = Number(btn.dataset.star);
       renderRatingPanel();
     });
   });
 
   panel.querySelector('#xlimRatingForm')?.addEventListener('submit', submitRating);
+  panel.querySelector('#deleteOwnRatingBtn')?.addEventListener('click', () => deleteRating(ownRating?.id));
   initTouchEffect();
 }
 
@@ -1658,19 +1695,101 @@ async function submitRating(event) {
     return;
   }
 
-  textarea.value = '';
+  ratingState.draftExperience = null;
 
   window.Swal?.fire({
     icon: 'success',
-    title: 'Rating terkirim',
-    text: 'Terima kasih, pengalaman kamu sudah tampil di website.',
+    title: 'Rating tersimpan',
+    text: 'Rating kamu sudah diperbarui di website.',
     background: '#07111f',
     color: '#ffffff',
     timer: 1700,
     showConfirmButton: false
   });
 
-  loadRatings();
+  await loadRatings();
+  renderRatingPanel();
+  renderProfilePage();
+}
+
+async function deleteRating(ratingId) {
+  if (!currentUser || !ratingId) return;
+
+  let confirmed = true;
+
+  if (window.Swal) {
+    const result = await Swal.fire({
+      icon: 'warning',
+      title: 'Hapus rating?',
+      text: 'Rating kamu akan dihapus dari website.',
+      background: '#07111f',
+      color: '#ffffff',
+      showCancelButton: true,
+      confirmButtonText: 'Hapus',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#334155'
+    });
+
+    confirmed = result.isConfirmed;
+  } else {
+    confirmed = confirm('Hapus rating kamu?');
+  }
+
+  if (!confirmed) return;
+
+  const { error } = await supabase
+    .from('ratings')
+    .delete()
+    .eq('id', ratingId)
+    .eq('user_id', currentUser.id);
+
+  if (error) {
+    window.Swal?.fire({
+      icon: 'error',
+      title: 'Gagal hapus rating',
+      text: error.message,
+      background: '#07111f',
+      color: '#ffffff',
+      confirmButtonColor: '#38bdf8'
+    });
+    return;
+  }
+
+  ratingState.selectedStars = 5;
+  ratingState.draftExperience = null;
+
+  window.Swal?.fire({
+    icon: 'success',
+    title: 'Rating dihapus',
+    background: '#07111f',
+    color: '#ffffff',
+    timer: 1300,
+    showConfirmButton: false
+  });
+
+  await loadRatings();
+  renderRatingPanel();
+  renderProfilePage();
+}
+
+async function editRating(ratingId) {
+  const rating = ratingState.ratings.find((item) => item.id === ratingId);
+
+  if (!rating || !currentUser || rating.user_id !== currentUser.id) return;
+
+  ratingState.selectedStars = Number(rating.stars || 5);
+  ratingState.draftExperience = rating.experience || '';
+
+  window.location.hash = '#rating';
+  renderRatingPanel();
+
+  setTimeout(() => {
+    document.getElementById('xlimRatingPanel')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
+  }, 200);
 }
 
 async function loadRatings() {
@@ -1710,23 +1829,49 @@ async function loadRatings() {
 
   if (!total) {
     items.innerHTML = `<div class="rating-card"><p>Belum ada rating. Jadilah pengguna pertama yang memberi pengalaman.</p></div>`;
+    renderRatingPanel();
     return;
   }
 
-  items.innerHTML = ratingState.ratings.map((item) => `
-    <article class="rating-card">
-      <div class="rating-card-head">
-        <img src="${escapeHtml(item.avatar_url || 'https://api.dicebear.com/8.x/initials/svg?seed=Customer')}" alt="${escapeHtml(item.display_name)}">
-        <div>
-          <strong>${escapeHtml(item.display_name)}</strong>
-          <small>${formatDate(item.updated_at)}</small>
-        </div>
-      </div>
-      <div class="rating-stars">${'★'.repeat(item.stars)}${'☆'.repeat(5 - item.stars)}</div>
-      <p>${escapeHtml(item.experience)}</p>
-    </article>
-  `).join('');
+  items.innerHTML = ratingState.ratings.map((item) => {
+    const isOwner = currentUser && item.user_id === currentUser.id;
 
+    return `
+      <article class="rating-card">
+        <div class="rating-card-head">
+          <img src="${escapeHtml(item.avatar_url || 'https://api.dicebear.com/8.x/initials/svg?seed=Customer')}" alt="${escapeHtml(item.display_name)}">
+          <div>
+            <strong>${escapeHtml(item.display_name)}</strong>
+            <small>${formatDate(item.updated_at)}</small>
+          </div>
+        </div>
+        <div class="rating-stars">${'★'.repeat(item.stars)}${'☆'.repeat(5 - item.stars)}</div>
+        <p>${escapeHtml(item.experience)}</p>
+        ${isOwner ? `
+          <div class="rating-actions">
+            <button class="rating-action-btn" type="button" data-edit-rating="${escapeHtml(item.id)}">
+              <i class="ri-edit-2-line"></i>
+              Edit
+            </button>
+            <button class="rating-action-btn danger" type="button" data-delete-rating="${escapeHtml(item.id)}">
+              <i class="ri-delete-bin-line"></i>
+              Hapus
+            </button>
+          </div>
+        ` : ''}
+      </article>
+    `;
+  }).join('');
+
+  document.querySelectorAll('[data-edit-rating]').forEach((button) => {
+    button.addEventListener('click', () => editRating(button.dataset.editRating));
+  });
+
+  document.querySelectorAll('[data-delete-rating]').forEach((button) => {
+    button.addEventListener('click', () => deleteRating(button.dataset.deleteRating));
+  });
+
+  renderRatingPanel();
   initTouchEffect();
 }
 
@@ -1811,7 +1956,7 @@ function renderProfilePage() {
           </a>
           <a class="xlim-profile-secondary" href="#rating">
             <i class="ri-star-smile-line"></i>
-            Beri Rating
+            Beri / Edit Rating
           </a>
           <button class="xlim-profile-danger" type="button" data-logout>
             <i class="ri-logout-box-r-line"></i>
