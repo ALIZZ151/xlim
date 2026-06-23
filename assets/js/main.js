@@ -9,6 +9,8 @@ let ratingState = {
   ratings: []
 };
 
+let profileOrders = [];
+
 function injectFinalStyles() {
   if (document.getElementById('xlim-final-style')) return;
 
@@ -28,6 +30,14 @@ function injectFinalStyles() {
       --xlim-muted: #94a3b8;
       --xlim-line: rgba(148, 163, 184, .14);
       --xlim-glow: rgba(56, 189, 248, .32);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      padding-bottom: 94px;
     }
 
     .loader-ultra {
@@ -102,15 +112,17 @@ function injectFinalStyles() {
     .feature-card,
     .account-card,
     .rating-card,
-    .xlim-welcome-card {
+    .xlim-welcome-card,
+    .xlim-route-card {
       box-shadow: 0 18px 55px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.04);
     }
 
     .ultra-card:hover,
     .product-card:hover,
     .feature-card:hover,
-    .rating-card:hover {
-      transform: translateY(-6px) scale(1.006);
+    .rating-card:hover,
+    .xlim-route-card:hover {
+      transform: translateY(-5px) scale(1.004);
       border-color: rgba(56,189,248,.30) !important;
       box-shadow: 0 26px 75px rgba(14,165,233,.16), inset 0 1px 0 rgba(255,255,255,.07);
     }
@@ -156,29 +168,7 @@ function injectFinalStyles() {
 
     #backToTop,
     .back-to-top {
-      position: fixed !important;
-      right: 22px !important;
-      bottom: 22px !important;
-      left: auto !important;
-      width: 54px !important;
-      height: 54px !important;
-      border-radius: 18px !important;
-      border: 1px solid rgba(56,189,248,.22) !important;
-      background: rgba(224,242,254,.95) !important;
-      color: #020617 !important;
-      box-shadow: 0 18px 44px rgba(0,0,0,.32), 0 0 30px rgba(56,189,248,.14) !important;
-      z-index: 60 !important;
-      opacity: 0 !important;
-      pointer-events: none !important;
-      transform: translateY(16px) scale(.92) !important;
-      transition: .28s ease !important;
-    }
-
-    #backToTop.show,
-    .back-to-top.show {
-      opacity: 1 !important;
-      pointer-events: auto !important;
-      transform: translateY(0) scale(1) !important;
+      display: none !important;
     }
 
     .xlim-welcome-overlay {
@@ -319,19 +309,38 @@ function injectFinalStyles() {
       color: white;
     }
 
-    .xlim-rating-section {
+    .xlim-route-page {
       width: min(1240px, calc(100% - 32px));
-      margin: 0 auto 70px;
+      margin: 0 auto;
+      padding: 124px 0 42px;
       position: relative;
-      z-index: 10;
+      z-index: 12;
+      min-height: calc(100vh - 94px);
+      display: none;
     }
 
-    .xlim-rating-head {
+    .xlim-route-page.active {
+      display: block;
+      animation: xlimRouteIn .34s ease both;
+    }
+
+    @keyframes xlimRouteIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .xlim-route-head {
       text-align: center;
       margin-bottom: 28px;
     }
 
-    .xlim-rating-eyebrow {
+    .xlim-route-eyebrow {
       color: var(--xlim-blue);
       font-family: var(--font-mono, monospace);
       font-size: 11px;
@@ -341,19 +350,19 @@ function injectFinalStyles() {
       margin-bottom: 10px;
     }
 
-    .xlim-rating-title {
+    .xlim-route-title {
       margin: 0;
       color: white;
       font-family: var(--font-display, sans-serif);
-      font-size: clamp(32px, 7vw, 54px);
-      line-height: 1;
+      font-size: clamp(34px, 8vw, 58px);
+      line-height: .96;
       letter-spacing: -.06em;
       font-weight: 900;
     }
 
-    .xlim-rating-desc {
+    .xlim-route-desc {
       margin: 14px auto 0;
-      max-width: 680px;
+      max-width: 720px;
       color: #94a3b8;
       line-height: 1.75;
       font-size: 14px;
@@ -367,7 +376,9 @@ function injectFinalStyles() {
     }
 
     .xlim-rating-panel,
-    .xlim-rating-list {
+    .xlim-rating-list,
+    .xlim-profile-panel,
+    .xlim-profile-orders {
       border-radius: 28px;
       border: 1px solid rgba(148,163,184,.14);
       background:
@@ -386,8 +397,8 @@ function injectFinalStyles() {
     }
 
     .xlim-rating-user img {
-      width: 50px;
-      height: 50px;
+      width: 54px;
+      height: 54px;
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid rgba(56,189,248,.3);
@@ -396,7 +407,7 @@ function injectFinalStyles() {
     .xlim-rating-user strong {
       display: block;
       font-family: var(--font-display, sans-serif);
-      font-size: 18px;
+      font-size: 19px;
     }
 
     .xlim-rating-user span {
@@ -451,25 +462,41 @@ function injectFinalStyles() {
       box-shadow: 0 0 0 4px rgba(56,189,248,.08);
     }
 
-    .xlim-rating-submit {
+    .xlim-rating-submit,
+    .xlim-rating-login,
+    .xlim-profile-primary,
+    .xlim-profile-secondary,
+    .xlim-profile-danger {
       width: 100%;
       min-height: 50px;
       margin-top: 12px;
-      border: 1px solid #e0f2fe;
-      background: #e0f2fe;
-      color: #020617;
       border-radius: 17px;
       font-weight: 900;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 9px;
+      border: 1px solid rgba(148,163,184,.14);
     }
 
-    .xlim-rating-login {
-      width: 100%;
-      min-height: 50px;
-      border: 1px solid rgba(56,189,248,.26);
+    .xlim-rating-submit,
+    .xlim-profile-primary {
+      border-color: #e0f2fe;
+      background: #e0f2fe;
+      color: #020617;
+    }
+
+    .xlim-rating-login,
+    .xlim-profile-secondary {
+      border-color: rgba(56,189,248,.26);
       background: rgba(56,189,248,.10);
       color: white;
-      border-radius: 17px;
-      font-weight: 900;
+    }
+
+    .xlim-profile-danger {
+      border-color: rgba(239,68,68,.22);
+      background: rgba(239,68,68,.10);
+      color: #fecaca;
     }
 
     .xlim-rating-summary {
@@ -482,7 +509,7 @@ function injectFinalStyles() {
 
     .xlim-rating-score {
       font-family: var(--font-display, sans-serif);
-      font-size: 34px;
+      font-size: 36px;
       font-weight: 900;
       letter-spacing: -.05em;
     }
@@ -544,6 +571,237 @@ function injectFinalStyles() {
       font-size: 13px;
     }
 
+    .xlim-profile-grid {
+      display: grid;
+      grid-template-columns: 420px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .xlim-profile-card {
+      text-align: center;
+    }
+
+    .xlim-profile-avatar-wrap {
+      width: 118px;
+      height: 118px;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      position: relative;
+    }
+
+    .xlim-profile-avatar-wrap::before {
+      content: "";
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      background: rgba(56,189,248,.18);
+      filter: blur(12px);
+    }
+
+    .xlim-profile-avatar {
+      position: relative;
+      width: 118px;
+      height: 118px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid rgba(56,189,248,.35);
+    }
+
+    .xlim-profile-name {
+      margin: 0;
+      font-family: var(--font-display, sans-serif);
+      font-size: 34px;
+      line-height: 1;
+      letter-spacing: -.05em;
+      font-weight: 900;
+    }
+
+    .xlim-profile-email {
+      margin: 10px 0 0;
+      color: #94a3b8;
+      word-break: break-all;
+    }
+
+    .xlim-profile-actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .xlim-profile-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .xlim-profile-stat {
+      border-radius: 18px;
+      border: 1px solid rgba(148,163,184,.12);
+      background: rgba(2,6,23,.42);
+      padding: 14px 10px;
+      text-align: center;
+    }
+
+    .xlim-profile-stat b {
+      display: block;
+      font-family: var(--font-display, sans-serif);
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .xlim-profile-stat span {
+      display: block;
+      margin-top: 6px;
+      color: #94a3b8;
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .xlim-profile-orders h3 {
+      margin: 0 0 16px;
+      font-family: var(--font-display, sans-serif);
+      font-size: 28px;
+      letter-spacing: -.04em;
+      font-weight: 900;
+    }
+
+    .xlim-profile-order-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .xlim-profile-order {
+      border-radius: 20px;
+      border: 1px solid rgba(148,163,184,.12);
+      background: rgba(2,6,23,.42);
+      padding: 16px;
+    }
+
+    .xlim-profile-order strong {
+      display: block;
+      color: white;
+      font-family: var(--font-display, sans-serif);
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .xlim-profile-order span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #94a3b8;
+      font-size: 12px;
+      margin-right: 12px;
+      margin-top: 6px;
+    }
+
+    .xlim-profile-order small {
+      display: block;
+      margin-top: 10px;
+      color: #64748b;
+      font-family: var(--font-mono, monospace);
+      word-break: break-all;
+    }
+
+    .xlim-bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      z-index: 999;
+      width: min(430px, calc(100% - 28px));
+      min-height: 72px;
+      border-radius: 26px;
+      border: 1px solid rgba(148,163,184,.16);
+      background:
+        radial-gradient(circle at top, rgba(56,189,248,.14), transparent 48%),
+        rgba(2, 8, 23, .82);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.05);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 8px;
+      gap: 7px;
+    }
+
+    .xlim-bottom-link {
+      border: 0;
+      border-radius: 20px;
+      background: transparent;
+      color: #94a3b8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-weight: 900;
+      font-size: 11px;
+      letter-spacing: .02em;
+      transition: .22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .xlim-bottom-link i {
+      font-size: 21px;
+      line-height: 1;
+    }
+
+    .xlim-bottom-link.active {
+      background: #e0f2fe;
+      color: #020617;
+      box-shadow: 0 12px 30px rgba(56,189,248,.16);
+    }
+
+    .xlim-bottom-link:not(.active):hover {
+      color: white;
+      background: rgba(56,189,248,.09);
+    }
+
+    .xlim-bottom-dot {
+      position: absolute;
+      top: 8px;
+      right: 18px;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 14px rgba(34,197,94,.55);
+      display: none;
+    }
+
+    .xlim-bottom-link.has-user .xlim-bottom-dot {
+      display: block;
+    }
+
+    body.xlim-page-home #xlimRatingPage,
+    body.xlim-page-home #xlimProfilePage {
+      display: none !important;
+    }
+
+    body.xlim-page-rating main,
+    body.xlim-page-rating footer,
+    body.xlim-page-profile main,
+    body.xlim-page-profile footer {
+      display: none !important;
+    }
+
+    body.xlim-page-rating #xlimRatingPage,
+    body.xlim-page-profile #xlimProfilePage {
+      display: block;
+    }
+
+    body.xlim-page-rating,
+    body.xlim-page-profile {
+      min-height: 100vh;
+    }
+
     #xlimFooterAccount,
     #footerUserPanel,
     .xlim-footer-account {
@@ -555,34 +813,40 @@ function injectFinalStyles() {
       overflow: hidden !important;
     }
 
-    footer {
-      padding-bottom: 42px !important;
-    }
-
-    footer .border-t {
-      margin-top: 28px !important;
-    }
-
     @media (max-width: 900px) {
-      .xlim-rating-grid {
+      .xlim-rating-grid,
+      .xlim-profile-grid {
         grid-template-columns: 1fr;
       }
 
       .xlim-rating-panel,
-      .xlim-rating-list {
+      .xlim-rating-list,
+      .xlim-profile-panel,
+      .xlim-profile-orders {
         border-radius: 24px;
         padding: 18px;
       }
     }
 
     @media (max-width: 640px) {
-      #backToTop,
-      .back-to-top {
-        display: none !important;
+      .xlim-route-page {
+        width: calc(100% - 24px);
+        padding-top: 108px;
       }
 
-      footer {
-        padding-bottom: 28px !important;
+      .xlim-bottom-nav {
+        bottom: 12px;
+        min-height: 68px;
+        border-radius: 24px;
+      }
+
+      .xlim-bottom-link {
+        border-radius: 18px;
+        font-size: 10px;
+      }
+
+      .xlim-bottom-link i {
+        font-size: 20px;
       }
     }
 
@@ -597,11 +861,6 @@ function injectFinalStyles() {
         width: 100%;
       }
 
-      .xlim-rating-section {
-        width: calc(100% - 24px);
-        margin-bottom: 56px;
-      }
-
       .xlim-stars {
         justify-content: space-between;
       }
@@ -609,6 +868,10 @@ function injectFinalStyles() {
       .xlim-star-btn {
         width: 40px;
         height: 40px;
+      }
+
+      .xlim-profile-stats {
+        grid-template-columns: 1fr;
       }
     }
   `;
@@ -920,34 +1183,21 @@ function initNavbar() {
   const mobileMenu = document.getElementById('mobileMenu');
   const backToTop = document.getElementById('backToTop') || document.querySelector('.back-to-top');
 
-  window.addEventListener('scroll', () => {
-    if (navbar) {
-      if (window.scrollY > 50) {
-        navbar.style.background = 'rgba(2, 6, 23, 0.9)';
-        navbar.style.borderBottom = '1px solid rgba(56, 189, 248, 0.24)';
-        navbar.style.boxShadow = '0 14px 40px rgba(0,0,0,.25)';
-      } else {
-        navbar.style.background = 'rgba(2, 6, 23, 0.72)';
-        navbar.style.borderBottom = '1px solid rgba(148, 163, 184, 0.12)';
-        navbar.style.boxShadow = 'none';
-      }
-    }
+  if (backToTop) backToTop.remove();
 
-    if (backToTop && window.innerWidth > 640) {
-      if (window.scrollY > 520) backToTop.classList.add('show');
-      else backToTop.classList.remove('show');
+  window.addEventListener('scroll', () => {
+    if (!navbar) return;
+
+    if (window.scrollY > 50) {
+      navbar.style.background = 'rgba(2, 6, 23, 0.9)';
+      navbar.style.borderBottom = '1px solid rgba(56, 189, 248, 0.24)';
+      navbar.style.boxShadow = '0 14px 40px rgba(0,0,0,.25)';
+    } else {
+      navbar.style.background = 'rgba(2, 6, 23, 0.72)';
+      navbar.style.borderBottom = '1px solid rgba(148, 163, 184, 0.12)';
+      navbar.style.boxShadow = 'none';
     }
   });
-
-  if (backToTop) {
-    if (window.innerWidth <= 640) {
-      backToTop.remove();
-    } else {
-      backToTop.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-    }
-  }
 
   menuBtn?.addEventListener('click', () => {
     mobileMenu?.classList.toggle('show');
@@ -959,6 +1209,7 @@ function initNavbar() {
     link.addEventListener('click', (event) => {
       const selector = link.getAttribute('href');
       if (!selector || selector === '#') return;
+      if (['#home', '#rating', '#profile'].includes(selector)) return;
 
       const target = document.querySelector(selector);
       if (!target) return;
@@ -979,7 +1230,7 @@ function initNavbar() {
 
 function initCardSpotlight() {
   window.addEventListener('mousemove', (event) => {
-    document.querySelectorAll('.ultra-card, .product-card, .rating-card').forEach((card) => {
+    document.querySelectorAll('.ultra-card, .product-card, .rating-card, .xlim-route-card').forEach((card) => {
       const rect = card.getBoundingClientRect();
       card.style.setProperty('--mouse-x', `${event.clientX - rect.left}px`);
       card.style.setProperty('--mouse-y', `${event.clientY - rect.top}px`);
@@ -988,7 +1239,7 @@ function initCardSpotlight() {
 }
 
 function initTouchEffect() {
-  document.querySelectorAll('a, button, .ultra-card, .product-card, .stat-card, .mobile-link, .nav-link, .rating-card').forEach((target) => {
+  document.querySelectorAll('a, button, .ultra-card, .product-card, .stat-card, .mobile-link, .nav-link, .rating-card, .xlim-route-card').forEach((target) => {
     if (target.dataset.tapReady === 'true') return;
     target.dataset.tapReady = 'true';
     target.classList.add('tap-target');
@@ -1036,7 +1287,7 @@ function initDeviceClass() {
 export async function loginWithGoogle() {
   if (!supabase?.auth) return;
 
-  const redirectTo = window.location.origin + window.location.pathname;
+  const redirectTo = `${window.location.origin}/#profile`;
 
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -1057,7 +1308,7 @@ export async function loginWithGoogle() {
 export async function logoutUser() {
   if (!supabase?.auth) return;
   await supabase.auth.signOut();
-  window.location.href = '/';
+  window.location.href = '/#home';
 }
 
 async function refreshCurrentUser() {
@@ -1105,6 +1356,8 @@ export async function updateUserUI() {
   }
 
   renderRatingPanel();
+  renderProfilePage();
+  updateBottomNavUser();
 }
 
 function bindAuthButtons() {
@@ -1143,9 +1396,9 @@ function initWelcomePopup() {
         Login dengan Google untuk order lebih aman, melihat riwayat pembelian, dan memberi rating pengalaman kamu.
       </p>
       <div class="xlim-welcome-actions">
-        <a href="#products" class="xlim-welcome-primary">
-          <i class="ri-shopping-bag-3-line"></i>
-          Lihat Produk
+        <a href="#home" class="xlim-welcome-primary">
+          <i class="ri-home-5-line"></i>
+          Masuk Home
         </a>
         <button class="xlim-welcome-secondary" type="button" data-login-google>
           <i class="ri-google-fill"></i>
@@ -1168,46 +1421,133 @@ function initWelcomePopup() {
     if (event.target === overlay) close();
   });
 
+  overlay.querySelector('a[href="#home"]')?.addEventListener('click', close);
+
   window.addEventListener('xlim:preloader-done', () => {
-    setTimeout(() => overlay.classList.add('show'), 450);
+    setTimeout(() => {
+      if (getRoute() === 'home') overlay.classList.add('show');
+    }, 450);
   }, { once: true });
 
   setTimeout(() => {
-    if (document.body.contains(overlay) && !overlay.classList.contains('show')) {
+    if (document.body.contains(overlay) && !overlay.classList.contains('show') && getRoute() === 'home') {
       overlay.classList.add('show');
     }
   }, 5500);
 }
 
-function initRatingSection() {
-  if (document.getElementById('xlimRatings')) return;
-
-  const footer = document.querySelector('footer');
-  const section = document.createElement('section');
-  section.id = 'xlimRatings';
-  section.className = 'xlim-rating-section';
-  section.innerHTML = `
-    <div class="xlim-rating-head">
-      <div class="xlim-rating-eyebrow">Customer Experience</div>
-      <h2 class="xlim-rating-title">Rating Pengguna XLIM STORE</h2>
-      <p class="xlim-rating-desc">
-        Rating ini dikirim langsung oleh akun Google pelanggan. Semua pengunjung bisa melihat pengalaman pengguna lain secara publik.
-      </p>
-    </div>
-    <div class="xlim-rating-grid">
-      <div class="xlim-rating-panel" id="xlimRatingPanel"></div>
-      <div class="xlim-rating-list">
-        <div class="xlim-rating-summary" id="xlimRatingSummary"></div>
-        <div class="xlim-rating-items" id="xlimRatingItems"></div>
+function createRoutePages() {
+  if (!document.getElementById('xlimRatingPage')) {
+    const ratingPage = document.createElement('section');
+    ratingPage.id = 'xlimRatingPage';
+    ratingPage.className = 'xlim-route-page';
+    ratingPage.innerHTML = `
+      <div class="xlim-route-head">
+        <div class="xlim-route-eyebrow">Customer Experience</div>
+        <h2 class="xlim-route-title">Rating XLIM STORE</h2>
+        <p class="xlim-route-desc">
+          Rating ini dikirim langsung oleh akun Google pelanggan. Semua pengunjung bisa melihat pengalaman pengguna lain secara publik.
+        </p>
       </div>
-    </div>
+
+      <div class="xlim-rating-grid">
+        <div class="xlim-rating-panel xlim-route-card" id="xlimRatingPanel"></div>
+        <div class="xlim-rating-list xlim-route-card">
+          <div class="xlim-rating-summary" id="xlimRatingSummary"></div>
+          <div class="xlim-rating-items" id="xlimRatingItems"></div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(ratingPage);
+  }
+
+  if (!document.getElementById('xlimProfilePage')) {
+    const profilePage = document.createElement('section');
+    profilePage.id = 'xlimProfilePage';
+    profilePage.className = 'xlim-route-page';
+    profilePage.innerHTML = `
+      <div class="xlim-route-head">
+        <div class="xlim-route-eyebrow">Customer Area</div>
+        <h2 class="xlim-route-title">Profil Akun</h2>
+        <p class="xlim-route-desc">
+          Kelola akses akun Google kamu, lihat riwayat order, dan masuk ke halaman akun pembeli dengan lebih cepat.
+        </p>
+      </div>
+
+      <div id="xlimProfileContent"></div>
+    `;
+
+    document.body.appendChild(profilePage);
+  }
+}
+
+function createBottomNav() {
+  if (document.getElementById('xlimBottomNav')) return;
+
+  const nav = document.createElement('nav');
+  nav.id = 'xlimBottomNav';
+  nav.className = 'xlim-bottom-nav';
+  nav.innerHTML = `
+    <a class="xlim-bottom-link" href="#home" data-route-link="home">
+      <i class="ri-home-5-fill"></i>
+      <span>Home</span>
+    </a>
+    <a class="xlim-bottom-link" href="#rating" data-route-link="rating">
+      <i class="ri-star-smile-fill"></i>
+      <span>Rating</span>
+    </a>
+    <a class="xlim-bottom-link" href="#profile" data-route-link="profile">
+      <span class="xlim-bottom-dot"></span>
+      <i class="ri-user-3-fill"></i>
+      <span>Profil</span>
+    </a>
   `;
 
-  if (footer) footer.parentNode.insertBefore(section, footer);
-  else document.body.appendChild(section);
+  document.body.appendChild(nav);
+}
 
-  renderRatingPanel();
-  loadRatings();
+function getRoute() {
+  const hash = (window.location.hash || '#home').replace('#', '').trim().toLowerCase();
+
+  if (hash === 'rating') return 'rating';
+  if (hash === 'profile' || hash === 'profil') return 'profile';
+
+  return 'home';
+}
+
+function applyRoute() {
+  const route = getRoute();
+
+  document.body.classList.remove('xlim-page-home', 'xlim-page-rating', 'xlim-page-profile');
+  document.body.classList.add(`xlim-page-${route}`);
+
+  document.querySelectorAll('[data-route-link]').forEach((item) => {
+    item.classList.toggle('active', item.dataset.routeLink === route);
+  });
+
+  if (route === 'rating') {
+    loadRatings();
+    renderRatingPanel();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  if (route === 'profile') {
+    renderProfilePage();
+    loadProfileOrders();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  if (route === 'home') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function updateBottomNavUser() {
+  const profileBtn = document.querySelector('[data-route-link="profile"]');
+  if (!profileBtn) return;
+
+  profileBtn.classList.toggle('has-user', Boolean(currentUser));
 }
 
 function renderRatingPanel() {
@@ -1348,7 +1688,7 @@ async function loadRatings() {
     .limit(50);
 
   if (error) {
-    items.innerHTML = `<div class="rating-card"><p>Rating belum siap. Jalankan SQL final-update.sql di Supabase.</p></div>`;
+    items.innerHTML = `<div class="rating-card"><p>Rating belum siap. Jalankan SQL ratings di Supabase.</p></div>`;
     summary.innerHTML = `<span class="xlim-rating-score">0.0</span><span>Belum ada rating</span>`;
     return;
   }
@@ -1390,9 +1730,161 @@ async function loadRatings() {
   initTouchEffect();
 }
 
+function renderProfilePage() {
+  const root = document.getElementById('xlimProfileContent');
+  if (!root) return;
+
+  if (!currentUser) {
+    root.innerHTML = `
+      <div class="xlim-profile-grid">
+        <div class="xlim-profile-panel xlim-profile-card xlim-route-card">
+          <div class="xlim-profile-avatar-wrap">
+            <img class="xlim-profile-avatar" src="https://api.dicebear.com/8.x/initials/svg?seed=XLIM%20STORE" alt="Guest">
+          </div>
+          <h3 class="xlim-profile-name">Guest User</h3>
+          <p class="xlim-profile-email">Login Google untuk membuka akun pembeli.</p>
+          <div class="xlim-profile-actions">
+            <button class="xlim-profile-primary" type="button" data-login-google>
+              <i class="ri-google-fill"></i>
+              Login Google
+            </button>
+            <a class="xlim-profile-secondary" href="#home">
+              <i class="ri-home-5-line"></i>
+              Kembali ke Home
+            </a>
+          </div>
+        </div>
+
+        <div class="xlim-profile-orders xlim-route-card">
+          <h3>Kenapa harus login?</h3>
+          <div class="xlim-profile-order-list">
+            <div class="xlim-profile-order">
+              <strong>Riwayat per akun</strong>
+              <span><i class="ri-shield-user-line"></i> Order kamu tidak bercampur dengan user lain.</span>
+            </div>
+            <div class="xlim-profile-order">
+              <strong>Rating pakai identitas asli</strong>
+              <span><i class="ri-star-smile-line"></i> Rating tampil dengan nama dan avatar Google.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    initTouchEffect();
+    return;
+  }
+
+  const name = getDisplayName(currentUser);
+  const avatar = getAvatar(currentUser);
+  const totalOrders = profileOrders.length;
+  const activeOrders = profileOrders.filter((item) => !['done', 'cancelled'].includes(item.status)).length;
+  const totalRatings = ratingState.ratings.filter((item) => item.user_id === currentUser.id).length;
+
+  root.innerHTML = `
+    <div class="xlim-profile-grid">
+      <div class="xlim-profile-panel xlim-profile-card xlim-route-card">
+        <div class="xlim-profile-avatar-wrap">
+          <img class="xlim-profile-avatar" src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}">
+        </div>
+        <h3 class="xlim-profile-name">${escapeHtml(name)}</h3>
+        <p class="xlim-profile-email">${escapeHtml(currentUser.email || '')}</p>
+
+        <div class="xlim-profile-stats">
+          <div class="xlim-profile-stat">
+            <b>${totalOrders}</b>
+            <span>Order</span>
+          </div>
+          <div class="xlim-profile-stat">
+            <b>${activeOrders}</b>
+            <span>Proses</span>
+          </div>
+          <div class="xlim-profile-stat">
+            <b>${totalRatings}</b>
+            <span>Rating</span>
+          </div>
+        </div>
+
+        <div class="xlim-profile-actions">
+          <a class="xlim-profile-primary" href="/account/">
+            <i class="ri-user-3-line"></i>
+            Buka Akun Pembeli
+          </a>
+          <a class="xlim-profile-secondary" href="#rating">
+            <i class="ri-star-smile-line"></i>
+            Beri Rating
+          </a>
+          <button class="xlim-profile-danger" type="button" data-logout>
+            <i class="ri-logout-box-r-line"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <div class="xlim-profile-orders xlim-route-card">
+        <h3>Riwayat Cepat</h3>
+        <div class="xlim-profile-order-list" id="xlimProfileOrderList">
+          ${renderProfileOrders()}
+        </div>
+      </div>
+    </div>
+  `;
+
+  initTouchEffect();
+}
+
+function renderProfileOrders() {
+  if (!currentUser) return '';
+
+  if (!profileOrders.length) {
+    return `
+      <div class="xlim-profile-order">
+        <strong>Belum ada order</strong>
+        <span><i class="ri-shopping-bag-3-line"></i> Pilih produk di Home lalu klik Order.</span>
+      </div>
+    `;
+  }
+
+  return profileOrders.slice(0, 5).map((item) => `
+    <article class="xlim-profile-order">
+      <strong>${escapeHtml(item.product_name || item.name || 'Order XLIM')}</strong>
+      <span><i class="ri-calendar-line"></i> ${formatDate(item.created_at)}</span>
+      <span><i class="ri-bank-card-line"></i> ${escapeHtml(item.payment_status || 'unpaid')}</span>
+      <span><i class="ri-loader-4-line"></i> ${escapeHtml(item.status || 'pending')}</span>
+      <small>${escapeHtml(item.id || '')}</small>
+    </article>
+  `).join('');
+}
+
+async function loadProfileOrders() {
+  if (!currentUser || !supabase?.from) {
+    profileOrders = [];
+    renderProfilePage();
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) throw error;
+
+    profileOrders = data || [];
+  } catch {
+    profileOrders = [];
+  }
+
+  renderProfilePage();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   injectFinalStyles();
   removeBadFooterAccount();
+  createRoutePages();
+  createBottomNav();
   initCanvas();
   initPreloader();
   initTyped();
@@ -1403,8 +1895,16 @@ document.addEventListener('DOMContentLoaded', () => {
   initDeviceClass();
   bindAuthButtons();
   initWelcomePopup();
-  initRatingSection();
   updateUserUI();
+  loadRatings();
+
+  if (!window.location.hash || window.location.hash === '#') {
+    history.replaceState(null, '', '#home');
+  }
+
+  applyRoute();
+
+  window.addEventListener('hashchange', applyRoute);
 
   setInterval(removeBadFooterAccount, 1200);
 });
