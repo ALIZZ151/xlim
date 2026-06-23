@@ -1,61 +1,168 @@
-import { supabaseAdmin } from './_lib/supabase-admin.js';
-import { requireAdmin } from './_lib/admin-auth.js';
+import { getSupabaseAdmin } from './_lib/supabase-admin.js';
+import { readJson, requireAdmin, sendJson } from './_lib/admin-auth.js';
 
-function cleanProduct(payload) {
-  const allowed = ['name', 'category', 'price', 'description', 'features', 'badge', 'icon', 'theme', 'is_popular', 'is_active', 'sort_order'];
-  const data = {};
-  for (const key of allowed) {
-    if (payload[key] !== undefined) data[key] = payload[key];
-  }
-  if (data.features && !Array.isArray(data.features)) {
-    data.features = String(data.features).split('\n').map((item) => item.trim()).filter(Boolean);
-  }
-  if (data.sort_order !== undefined) data.sort_order = Number(data.sort_order || 0);
-  return data;
+function cleanProduct(body) {
+  return {
+    name: String(body.name || '').trim(),
+    category: String(body.category || '').trim(),
+    price: String(body.price || '').trim(),
+    description: String(body.description || '').trim(),
+    features: Array.isArray(body.features) ? body.features : [],
+    badge: String(body.badge || '').trim(),
+    icon: String(body.icon || 'ri-server-fill').trim(),
+    theme: String(body.theme || 'ocean').trim(),
+    is_popular: Boolean(body.is_popular),
+    is_active: Boolean(body.is_active),
+    sort_order: Number(body.sort_order || 1)
+  };
 }
 
 export default async function handler(req, res) {
+  const supabase = getSupabaseAdmin();
+
   try {
     if (req.method === 'GET') {
-      const isAdmin = req.query.admin === '1';
-      let query = supabaseAdmin.from('products').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false });
-      if (!isAdmin) query = query.eq('is_active', true);
+      const isAdmin = req.query?.admin === '1';
+
       if (isAdmin && !requireAdmin(req, res)) return;
+
+      let query = supabase
+        .from('products')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false });
+
+      if (!isAdmin) {
+        query = query.eq('is_active', true);
+      }
+
       const { data, error } = await query;
+
       if (error) throw error;
-      return res.status(200).json({ products: data || [] });
+
+      sendJson(res, 200, {
+        success: true,
+        products: data || []
+      });
+      return;
     }
 
-    const admin = requireAdmin(req, res);
-    if (!admin) return;
+    if (!requireAdmin(req, res)) return;
 
     if (req.method === 'POST') {
-      const payload = cleanProduct(req.body || {});
-      if (!payload.name || !payload.price) return res.status(400).json({ message: 'Nama produk dan harga wajib diisi.' });
-      const { data, error } = await supabaseAdmin.from('products').insert(payload).select('*').single();
+      const body = await readJson(req);
+      const payload = cleanProduct(body);
+
+      if (!payload.name || !payload.category || !payload.price) {
+        sendJson(res, 400, {
+          success: false,
+          message: 'Nama, kategori, dan harga wajib diisi.'
+        });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('products')
+        .insert(payload)
+        .select('*')
+        .single();
+
       if (error) throw error;
-      return res.status(201).json({ product: data });
+
+      sendJson(res, 200, {
+        success: true,
+        product: data
+      });
+      return;
     }
 
     if (req.method === 'PUT') {
-      const id = req.query.id;
-      if (!id) return res.status(400).json({ message: 'ID produk wajib diisi.' });
-      const payload = cleanProduct(req.body || {});
-      const { data, error } = await supabaseAdmin.from('products').update(payload).eq('id', id).select('*').single();
+      const body = await readJson(req);
+      const id = String(body.id || '').trim();
+
+      if (!id) {
+        sendJson(res, 400, {
+          success: false,
+          message: 'ID produk kosong.'
+        });
+        return;
+      }
+
+      const allowed = [
+        'name',
+        'category',
+        'price',
+        'description',
+        'features',
+        'badge',
+        'icon',
+        'theme',
+        'is_popular',
+        'is_active',
+        'sort_order'
+      ];
+
+      const payload = {};
+
+      allowed.forEach((key) => {
+        if (Object.prototype.hasOwnProperty.call(body, key)) {
+          payload[key] = body[key];
+        }
+      });
+
+      if (payload.sort_order !== undefined) payload.sort_order = Number(payload.sort_order || 1);
+      if (payload.is_active !== undefined) payload.is_active = Boolean(payload.is_active);
+      if (payload.is_popular !== undefined) payload.is_popular = Boolean(payload.is_popular);
+      if (payload.features !== undefined && !Array.isArray(payload.features)) payload.features = [];
+
+      const { data, error } = await supabase
+        .from('products')
+        .update(payload)
+        .eq('id', id)
+        .select('*')
+        .single();
+
       if (error) throw error;
-      return res.status(200).json({ product: data });
+
+      sendJson(res, 200, {
+        success: true,
+        product: data
+      });
+      return;
     }
 
     if (req.method === 'DELETE') {
-      const id = req.query.id;
-      if (!id) return res.status(400).json({ message: 'ID produk wajib diisi.' });
-      const { error } = await supabaseAdmin.from('products').delete().eq('id', id);
+      const id = String(req.query?.id || '').trim();
+
+      if (!id) {
+        sendJson(res, 400, {
+          success: false,
+          message: 'ID produk kosong.'
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
       if (error) throw error;
-      return res.status(200).json({ success: true });
+
+      sendJson(res, 200, {
+        success: true
+      });
+      return;
     }
 
-    return res.status(405).json({ message: 'Method not allowed' });
+    sendJson(res, 405, {
+      success: false,
+      message: 'Method tidak didukung.'
+    });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    sendJson(res, 500, {
+      success: false,
+      message: error.message || 'Server error.'
+    });
   }
 }
