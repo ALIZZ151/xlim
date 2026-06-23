@@ -1,20 +1,16 @@
 {
-  "name": "xlimstore-pakasir-premium-vercel-ready",
-  "version": "5.0.0",
+  "name": "xlim-store-supabase",
+  "version": "1.0.0",
   "private": true,
-  "description": "XLIMSTORE premium Vercel + Supabase store with Pakasir automated payment flow.",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
-    "build": "node scripts/build.js",
-    "check": "node scripts/check.js",
-    "hash:admin": "node scripts/hash-admin-password.js"
-  },
-  "engines": {
-    "node": "20.x"
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.48.1",
-    "formidable": "^3.5.2"
+    "@supabase/supabase-js": "latest",
+    "vite": "latest"
   },
   "devDependencies": {}
 }

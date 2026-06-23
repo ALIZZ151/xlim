@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - xlim store</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body class="auth-body">
+  <section id="loginSection" class="auth-shell">
+    <div class="auth-orb one"></div>
+    <div class="auth-orb two"></div>
+    <form id="loginForm" class="login-card">
+      <div class="login-avatar"><i class="ri-user-3-fill"></i></div>
+      <h1 class="auth-title">xlim admin</h1>
+      <p class="auth-subtitle">Login owner untuk kelola produk dan order.</p>
+      <div id="loginAlert" class="login-alert"></div>
+      <div class="input-group"><i class="ri-user-line"></i><input id="adminUsername" type="text" placeholder="Username" autocomplete="username" required></div>
+      <div class="input-group"><i class="ri-lock-2-fill"></i><input id="adminPassword" type="password" placeholder="Password" autocomplete="current-password" required></div>
+      <div class="input-row"><label><input type="checkbox" checked> Remember me</label><a href="/">Back to Store</a></div>
+      <button id="loginButton" type="submit" class="login-btn">LOGIN</button>
+    </form>
+  </section>
+
+  <section id="dashboardSection" class="panel-layout hidden">
+    <aside class="sidebar">
+      <div>
+        <div class="sidebar-brand">
+          <div class="sidebar-logo"><i class="ri-store-3-fill"></i></div>
+          <div><h1>xlim store</h1><p>Admin System</p></div>
+        </div>
+        <nav class="side-nav">
+          <button class="side-link active" data-side-tab="overview"><i class="ri-dashboard-3-line"></i> Overview</button>
+          <button class="side-link" data-side-tab="products"><i class="ri-shopping-bag-3-line"></i> Produk</button>
+          <button class="side-link" data-side-tab="orders"><i class="ri-file-list-3-line"></i> Order</button>
+        </nav>
+      </div>
+      <div class="side-footer">
+        <button id="refreshAdmin" class="btn-outline-super btn-sm btn-block"><i class="ri-refresh-line"></i> Refresh</button>
+        <button id="logoutAdmin" class="btn-danger btn-sm btn-block"><i class="ri-logout-box-r-line"></i> Logout</button>
+      </div>
+    </aside>
+
+    <main class="panel-main">
+      <section data-panel-tab="overview">
+        <div class="panel-header">
+          <div><h2>Dashboard Owner</h2><p>Kelola produk, stok tampilan, dan status order xlim store.</p></div>
+          <div class="admin-actions"><button id="addProductBtn" class="btn-super"><i class="ri-add-line"></i> Tambah Produk</button><a href="/" class="btn-outline-super"><i class="ri-external-link-line"></i> Lihat Website</a></div>
+        </div>
+        <div class="stats-grid">
+          <div class="admin-card stat-admin"><div><span>Total Produk</span><b id="statTotalProducts">0</b></div><i class="ri-shopping-bag-3-line"></i></div>
+          <div class="admin-card stat-admin"><div><span>Produk Aktif</span><b id="statActiveProducts">0</b></div><i class="ri-eye-line"></i></div>
+          <div class="admin-card stat-admin"><div><span>Nonaktif</span><b id="statInactiveProducts">0</b></div><i class="ri-eye-off-line"></i></div>
+          <div class="admin-card stat-admin"><div><span>Order Proses</span><b id="statPendingOrders">0</b></div><i class="ri-file-list-3-line"></i></div>
+        </div>
+        <div class="admin-card">
+          <h3 style="font-family:Outfit,sans-serif;font-size:24px;font-weight:900;margin-bottom:10px">Sistem Aktif</h3>
+          <p style="color:#94a3b8;line-height:1.8">Admin login ini memakai username/password dari Vercel Environment Variables. Akses database admin berjalan lewat Vercel API menggunakan service role key di server, bukan di browser.</p>
+        </div>
+      </section>
+
+      <section data-panel-tab="products" class="hidden">
+        <div class="panel-header"><div><h2>Manajemen Produk</h2><p>Tambah, edit, hapus, dan aktif/nonaktif produk.</p></div><button id="addProductBtn2" class="btn-super"><i class="ri-add-line"></i> Tambah Produk</button></div>
+        <div class="admin-card table-card">
+          <div class="table-head"><h3>Daftar Produk</h3><span class="badge active">Supabase</span></div>
+          <div class="table-wrap"><table class="admin-table"><thead><tr><th>Produk</th><th>Kategori</th><th>Harga</th><th>Badge</th><th>Theme</th><th>Urutan</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="productsTableBody"></tbody></table></div>
+        </div>
+      </section>
+
+      <section data-panel-tab="orders" class="hidden">
+        <div class="panel-header"><div><h2>Order Pembeli</h2><p>Lihat order dari semua akun pembeli dan update status.</p></div></div>
+        <div id="ordersList" class="orders-grid"></div>
+      </section>
+    </main>
+  </section>
+
+  <div id="productModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-head"><h3 id="modalTitle">Tambah Produk</h3><button id="closeProductModal" class="icon-btn"><i class="ri-close-line"></i></button></div>
+      <form id="productForm">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="field"><label>Nama Produk</label><input id="productName" required placeholder="Panel Bot Basic"></div>
+            <div class="field"><label>Kategori</label><input id="productCategory" placeholder="Starter / Best Seller"></div>
+            <div class="field"><label>Harga</label><input id="productPrice" required placeholder="Rp 5.000"></div>
+            <div class="field"><label>Badge</label><input id="productBadge" placeholder="Populer"></div>
+            <div class="field"><label>Icon Remix</label><input id="productIcon" placeholder="ri-server-fill"></div>
+            <div class="field"><label>Theme</label><select id="productTheme"><option value="ocean">Ocean</option><option value="cyan">Cyan</option><option value="green">Green</option><option value="yellow">Yellow</option><option value="red">Red</option></select></div>
+            <div class="field"><label>Urutan</label><input id="productSort" type="number" value="1"></div>
+            <div class="field"><label>Status</label><div style="display:grid;gap:10px;color:#cbd5e1;font-size:13px"><label><input id="productPopular" type="checkbox"> Jadikan populer</label><label><input id="productActive" type="checkbox" checked> Produk aktif</label></div></div>
+            <div class="field full"><label>Deskripsi</label><textarea id="productDescription" placeholder="Deskripsi produk..."></textarea></div>
+            <div class="field full"><label>Fitur Produk</label><textarea id="productFeatures" placeholder="Satu fitur per baris&#10;Setup cepat&#10;Panel siap deploy"></textarea></div>
+          </div>
+        </div>
+        <div class="modal-actions"><button id="cancelProductModal" type="button" class="btn-outline-super">Batal</button><button type="submit" class="btn-super">Simpan Produk</button></div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script type="module" src="/assets/js/admin.js"></script>
+</body>
+</html>

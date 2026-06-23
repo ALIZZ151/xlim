@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://xlim.alizz.my.id/sitemap.xml

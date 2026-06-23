@@ -1,0 +1,68 @@
+@media (min-width: 1600px) {
+  .section, .nav-inner, .mobile-menu { max-width: 1480px; }
+  .hero { gap: 72px; min-height: 760px; }
+  .nav-link { min-width: 96px; font-size: 15px; }
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .nav-inner { min-height: 78px; }
+  .section { max-width: 1080px; }
+  .hero { min-height: auto; gap: 32px; padding-top: 48px; padding-bottom: 58px; }
+  .server-card { height: 410px; padding: 22px; }
+  .server-title { font-size: 20px; }
+  .hero-title { font-size: clamp(44px, 4.7vw, 58px); }
+  .hero-desc { font-size: 13px; }
+  .nav-link { font-size: 12px; min-width: 76px; padding: 13px 8px; }
+  .products-grid { grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .product-card { padding: 22px; }
+  .features-grid { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 1023px) {
+  .nav-inner { min-height: 76px; }
+  .nav-links { display: none; }
+  .mobile-menu.show { display: block; }
+  .hero { grid-template-columns: 1fr; min-height: auto; padding-top: 48px; padding-bottom: 58px; text-align: center; }
+  .hero-desc { margin-left: auto; margin-right: auto; text-align: left; }
+  .hero-actions { justify-content: center; }
+  .server-card { display: none; }
+  .stats { grid-template-columns: repeat(2,1fr); margin-bottom: 68px; }
+  .products-grid { grid-template-columns: repeat(2,1fr); }
+  .features-grid { grid-template-columns: repeat(2,1fr); }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .footer-grid > :first-child { grid-column: 1 / -1; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .hero-title { font-size: clamp(48px, 7vw, 64px); }
+  .product-card { min-height: 500px; }
+}
+@media (max-width: 767px) {
+  .nav-inner { min-height: 68px; padding: 0 16px; }
+  .brand-logo { width: 42px; height: 42px; border-radius: 14px; }
+  .brand-title { font-size: 20px; }
+  .brand-sub { font-size: 7px; letter-spacing: .12em; }
+  .user-pill span { display: none; }
+  .user-pill { padding: 7px; }
+  .main { padding-top: 76px; }
+  .section { padding: 0 16px; }
+  .hero { padding-top: 32px; padding-bottom: 42px; }
+  .hero-title { font-size: clamp(38px, 11vw, 52px); }
+  .hero-desc { font-size: 12.5px; padding-left: 14px; line-height: 1.7; }
+  .hero-actions { width: 100%; }
+  .hero-actions .btn-super, .hero-actions .btn-outline-super { flex: 1 1 100%; }
+  .stats { gap: 10px; margin-top: -12px; margin-bottom: 48px; }
+  .stat-card { padding: 18px 10px; }
+  .stat-card span { font-size: 24px; }
+  .stat-card p { font-size: 8px; }
+  .section-block { padding: 64px 0; }
+  .products-grid, .features-grid { grid-template-columns: 1fr; }
+  .product-card { min-height: auto; padding: 24px; }
+  .price { font-size: 30px; }
+  .cta-card { padding: 30px 18px; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .footer-bottom { flex-direction: column; text-align: center; }
+}
+@media (max-width: 390px) {
+  .brand-title { font-size: 18px; }
+  .nav-actions .btn-super span, .nav-actions .btn-outline-super span { display: none; }
+  .nav-actions .btn-super, .nav-actions .btn-outline-super { width: 42px; padding: 0; }
+  .hero-title { font-size: 36px; }
+}

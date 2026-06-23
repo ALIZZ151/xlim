@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akun Saya - xlim store</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/responsive.css">
+</head>
+<body>
+  <div id="canvas-container"></div>
+  <div class="mesh-gradient"></div>
+  <nav class="fixed w-full top-0 z-50 glass-nav" id="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand"><div class="brand-logo"><i class="ri-store-3-fill"></i></div><div><div class="brand-title">xlim store</div><div class="brand-sub"><span class="indicator-dot indicator-green"></span> Customer Area</div></div></a>
+      <div class="nav-actions">
+        <a href="/" class="btn-outline-super btn-sm"><i class="ri-home-4-line"></i> Beranda</a>
+        <button class="btn-outline-super btn-sm" data-logout style="display:none"><i class="ri-logout-box-r-line"></i> Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="section account-shell">
+    <section id="accountLoginBox" class="ultra-card cta-card theme-ocean hidden">
+      <span class="section-kicker">Login Pembeli</span>
+      <h2>Masuk ke Akun xlim store</h2>
+      <p>Login Google dipakai supaya order dan riwayat pembelian hanya muncul di akun kamu sendiri.</p>
+      <button class="btn-super" data-login-google><i class="fab fa-google"></i> Login dengan Google</button>
+    </section>
+
+    <section id="accountDashboard" class="account-grid hidden">
+      <aside class="ultra-card profile-card theme-ocean">
+        <img id="profileAvatar" src="" alt="Profile">
+        <h2 id="profileName">User</h2>
+        <p id="profileEmail">email@example.com</p>
+        <div class="grid gap-3 mt-6">
+          <a href="/" class="btn-outline-super btn-block"><i class="ri-shopping-bag-3-line"></i> Belanja Lagi</a>
+          <button class="btn-danger btn-block" data-logout><i class="ri-logout-box-r-line"></i> Logout</button>
+        </div>
+      </aside>
+      <section>
+        <div class="section-head" style="text-align:left;margin-bottom:22px">
+          <span class="section-kicker">Riwayat Pembelian</span>
+          <h1 class="section-title">Order Kamu</h1>
+          <p class="section-desc" style="margin-left:0">Data ini diambil dari Supabase dan dikunci per user dengan RLS.</p>
+        </div>
+        <div id="accountOrders"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script type="module" src="/assets/js/main.js"></script>
+  <script type="module" src="/assets/js/account.js"></script>
+</body>
+</html>

@@ -1,56 +1,61 @@
-'use strict';
+import { supabaseAdmin } from './_lib/supabase-admin.js';
+import { requireAdmin } from './_lib/admin-auth.js';
 
-const { withApi, ok, methodNotAllowed } = require('../server/_lib/responses');
-const { getSupabaseAdmin } = require('../server/_lib/supabase');
-const { publicProduct } = require('../server/_lib/utils');
-
-module.exports = withApi(async (req, res) => {
-  if (req.method !== 'GET') return methodNotAllowed(res, ['GET']);
-
-  const empty = () => ok(res, { products: [], count: 0, data: [] });
-
-  try {
-    const supabase = getSupabaseAdmin();
-    let result = await supabase
-      .from('products')
-      .select('id,slug,name,category,price,price_label,description,features,image_url,status,is_active,sort_order,created_at,updated_at')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: false });
-
-    if (result.error) {
-      safeLog('warn', 'products_primary_query_failed', result.error);
-      result = await supabase
-        .from('products')
-        .select('*')
-        .limit(100);
-    }
-
-    if (result.error) {
-      safeLog('error', 'products_fallback_query_failed', result.error);
-      return empty();
-    }
-
-    const products = (result.data || [])
-      .filter((row) => row && row.status !== 'inactive' && row.is_active !== false)
-      .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0))
-      .map(publicProduct);
-
-    return ok(res, { products, count: products.length, data: products });
-  } catch (error) {
-    safeLog('error', 'products_handler_failed', error);
-    return empty();
+function cleanProduct(payload) {
+  const allowed = ['name', 'category', 'price', 'description', 'features', 'badge', 'icon', 'theme', 'is_popular', 'is_active', 'sort_order'];
+  const data = {};
+  for (const key of allowed) {
+    if (payload[key] !== undefined) data[key] = payload[key];
   }
-});
+  if (data.features && !Array.isArray(data.features)) {
+    data.features = String(data.features).split('\n').map((item) => item.trim()).filter(Boolean);
+  }
+  if (data.sort_order !== undefined) data.sort_order = Number(data.sort_order || 0);
+  return data;
+}
 
-function safeLog(level, event, error) {
-  const payload = {
-    event,
-    code: error?.code,
-    name: error?.name,
-    message: error?.message ? String(error.message).slice(0, 220) : undefined,
-    hint: error?.hint ? String(error.hint).slice(0, 180) : undefined,
-  };
-  const writer = level === 'error' ? console.error : console.warn;
-  writer(`[xlim-api] ${event}`, payload);
+export default async function handler(req, res) {
+  try {
+    if (req.method === 'GET') {
+      const isAdmin = req.query.admin === '1';
+      let query = supabaseAdmin.from('products').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false });
+      if (!isAdmin) query = query.eq('is_active', true);
+      if (isAdmin && !requireAdmin(req, res)) return;
+      const { data, error } = await query;
+      if (error) throw error;
+      return res.status(200).json({ products: data || [] });
+    }
+
+    const admin = requireAdmin(req, res);
+    if (!admin) return;
+
+    if (req.method === 'POST') {
+      const payload = cleanProduct(req.body || {});
+      if (!payload.name || !payload.price) return res.status(400).json({ message: 'Nama produk dan harga wajib diisi.' });
+      const { data, error } = await supabaseAdmin.from('products').insert(payload).select('*').single();
+      if (error) throw error;
+      return res.status(201).json({ product: data });
+    }
+
+    if (req.method === 'PUT') {
+      const id = req.query.id;
+      if (!id) return res.status(400).json({ message: 'ID produk wajib diisi.' });
+      const payload = cleanProduct(req.body || {});
+      const { data, error } = await supabaseAdmin.from('products').update(payload).eq('id', id).select('*').single();
+      if (error) throw error;
+      return res.status(200).json({ product: data });
+    }
+
+    if (req.method === 'DELETE') {
+      const id = req.query.id;
+      if (!id) return res.status(400).json({ message: 'ID produk wajib diisi.' });
+      const { error } = await supabaseAdmin.from('products').delete().eq('id', id);
+      if (error) throw error;
+      return res.status(200).json({ success: true });
+    }
+
+    return res.status(405).json({ message: 'Method not allowed' });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 }
