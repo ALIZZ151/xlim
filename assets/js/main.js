@@ -1,7 +1,6 @@
 import { supabase } from './supabase-client.js';
 
 const BRAND_NAME = 'XLIM STORE';
-const WA_NUMBER = '6283193075449';
 const WELCOME_KEY = 'xlim_welcome_closed_session';
 
 let currentUser = null;
@@ -103,8 +102,7 @@ function injectFinalStyles() {
     .feature-card,
     .account-card,
     .rating-card,
-    .xlim-welcome-card,
-    .xlim-footer-account {
+    .xlim-welcome-card {
       box-shadow: 0 18px 55px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.04);
     }
 
@@ -154,6 +152,33 @@ function injectFinalStyles() {
         transform: translate(-50%, -50%) scale(18);
         opacity: 0;
       }
+    }
+
+    #backToTop,
+    .back-to-top {
+      position: fixed !important;
+      right: 22px !important;
+      bottom: 22px !important;
+      left: auto !important;
+      width: 54px !important;
+      height: 54px !important;
+      border-radius: 18px !important;
+      border: 1px solid rgba(56,189,248,.22) !important;
+      background: rgba(224,242,254,.95) !important;
+      color: #020617 !important;
+      box-shadow: 0 18px 44px rgba(0,0,0,.32), 0 0 30px rgba(56,189,248,.14) !important;
+      z-index: 60 !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transform: translateY(16px) scale(.92) !important;
+      transition: .28s ease !important;
+    }
+
+    #backToTop.show,
+    .back-to-top.show {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      transform: translateY(0) scale(1) !important;
     }
 
     .xlim-welcome-overlay {
@@ -296,7 +321,7 @@ function injectFinalStyles() {
 
     .xlim-rating-section {
       width: min(1240px, calc(100% - 32px));
-      margin: 0 auto 90px;
+      margin: 0 auto 70px;
       position: relative;
       z-index: 10;
     }
@@ -360,8 +385,7 @@ function injectFinalStyles() {
       margin-bottom: 18px;
     }
 
-    .xlim-rating-user img,
-    .xlim-footer-avatar {
+    .xlim-rating-user img {
       width: 50px;
       height: 50px;
       border-radius: 50%;
@@ -520,67 +544,23 @@ function injectFinalStyles() {
       font-size: 13px;
     }
 
+    #xlimFooterAccount,
+    #footerUserPanel,
     .xlim-footer-account {
-      margin-top: 28px;
-      border-radius: 24px;
-      border: 1px solid rgba(148,163,184,.14);
-      background:
-        radial-gradient(circle at top right, rgba(56,189,248,.12), transparent 36%),
-        linear-gradient(160deg, rgba(15,23,42,.72), rgba(2,6,23,.66));
-      padding: 18px;
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
     }
 
-    .xlim-footer-user {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
+    footer {
+      padding-bottom: 42px !important;
     }
 
-    .xlim-footer-user strong {
-      display: block;
-      color: white;
-      font-family: var(--font-display, sans-serif);
-      font-size: 18px;
-    }
-
-    .xlim-footer-user span {
-      display: block;
-      color: #94a3b8;
-      font-size: 12px;
-      margin-top: 3px;
-      word-break: break-all;
-    }
-
-    .xlim-footer-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 9px;
-    }
-
-    .xlim-footer-actions a,
-    .xlim-footer-actions button {
-      min-height: 44px;
-      border-radius: 15px;
-      border: 1px solid rgba(148,163,184,.14);
-      background: rgba(2,6,23,.46);
-      color: white;
-      font-size: 12px;
-      font-weight: 900;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-    }
-
-    .xlim-footer-login {
-      width: 100%;
-      min-height: 46px;
-      border-radius: 15px;
-      border: 1px solid #e0f2fe;
-      background: #e0f2fe;
-      color: #020617;
-      font-weight: 900;
+    footer .border-t {
+      margin-top: 28px !important;
     }
 
     @media (max-width: 900px) {
@@ -592,6 +572,17 @@ function injectFinalStyles() {
       .xlim-rating-list {
         border-radius: 24px;
         padding: 18px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      #backToTop,
+      .back-to-top {
+        display: none !important;
+      }
+
+      footer {
+        padding-bottom: 28px !important;
       }
     }
 
@@ -608,7 +599,7 @@ function injectFinalStyles() {
 
       .xlim-rating-section {
         width: calc(100% - 24px);
-        margin-bottom: 68px;
+        margin-bottom: 56px;
       }
 
       .xlim-stars {
@@ -656,9 +647,18 @@ function escapeHtml(value = '') {
     .replaceAll("'", '&#039;');
 }
 
+function removeBadFooterAccount() {
+  document.querySelectorAll('#xlimFooterAccount, #footerUserPanel, .xlim-footer-account').forEach((el) => {
+    el.remove();
+  });
+}
+
 function initCanvas() {
   const container = document.getElementById('canvas-container');
   if (!container) return;
+
+  const oldCanvas = container.querySelector('canvas');
+  if (oldCanvas) oldCanvas.remove();
 
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -918,23 +918,36 @@ function initNavbar() {
   const navbar = document.getElementById('navbar');
   const menuBtn = document.getElementById('mobileMenuBtn');
   const mobileMenu = document.getElementById('mobileMenu');
-  const backToTop = document.getElementById('backToTop');
+  const backToTop = document.getElementById('backToTop') || document.querySelector('.back-to-top');
 
   window.addEventListener('scroll', () => {
-    if (!navbar) return;
+    if (navbar) {
+      if (window.scrollY > 50) {
+        navbar.style.background = 'rgba(2, 6, 23, 0.9)';
+        navbar.style.borderBottom = '1px solid rgba(56, 189, 248, 0.24)';
+        navbar.style.boxShadow = '0 14px 40px rgba(0,0,0,.25)';
+      } else {
+        navbar.style.background = 'rgba(2, 6, 23, 0.72)';
+        navbar.style.borderBottom = '1px solid rgba(148, 163, 184, 0.12)';
+        navbar.style.boxShadow = 'none';
+      }
+    }
 
-    if (window.scrollY > 50) {
-      navbar.style.background = 'rgba(2, 6, 23, 0.9)';
-      navbar.style.borderBottom = '1px solid rgba(56, 189, 248, 0.24)';
-      navbar.style.boxShadow = '0 14px 40px rgba(0,0,0,.25)';
-      backToTop?.classList.add('show');
-    } else {
-      navbar.style.background = 'rgba(2, 6, 23, 0.72)';
-      navbar.style.borderBottom = '1px solid rgba(148, 163, 184, 0.12)';
-      navbar.style.boxShadow = 'none';
-      backToTop?.classList.remove('show');
+    if (backToTop && window.innerWidth > 640) {
+      if (window.scrollY > 520) backToTop.classList.add('show');
+      else backToTop.classList.remove('show');
     }
   });
+
+  if (backToTop) {
+    if (window.innerWidth <= 640) {
+      backToTop.remove();
+    } else {
+      backToTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+  }
 
   menuBtn?.addEventListener('click', () => {
     mobileMenu?.classList.toggle('show');
@@ -961,10 +974,6 @@ function initNavbar() {
       const icon = menuBtn?.querySelector('i');
       if (icon) icon.className = 'ri-menu-3-line';
     });
-  });
-
-  backToTop?.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 }
 
@@ -1061,6 +1070,8 @@ async function refreshCurrentUser() {
 export async function updateUserUI() {
   const user = await refreshCurrentUser();
 
+  removeBadFooterAccount();
+
   const loginBtns = document.querySelectorAll('[data-login-google]');
   const logoutBtns = document.querySelectorAll('[data-logout]');
   const userPills = document.querySelectorAll('[data-user-pill]');
@@ -1093,7 +1104,6 @@ export async function updateUserUI() {
     });
   }
 
-  renderFooterAccount();
   renderRatingPanel();
 }
 
@@ -1380,64 +1390,9 @@ async function loadRatings() {
   initTouchEffect();
 }
 
-function renderFooterAccount() {
-  const footer = document.querySelector('footer');
-  if (!footer) return;
-
-  let box = footer.querySelector('#xlimFooterAccount');
-
-  if (!box) {
-    const target = footer.querySelector('.md\\:col-span-5') || footer.querySelector('.footer-brand') || footer.firstElementChild || footer;
-    box = document.createElement('div');
-    box.id = 'xlimFooterAccount';
-    box.className = 'xlim-footer-account';
-    target.appendChild(box);
-  }
-
-  if (!currentUser) {
-    box.innerHTML = `
-      <div class="xlim-footer-user">
-        <img class="xlim-footer-avatar" src="https://api.dicebear.com/8.x/initials/svg?seed=XLIM%20STORE" alt="XLIM STORE">
-        <div>
-          <strong>Akun Pelanggan</strong>
-          <span>Login untuk order, riwayat, dan rating.</span>
-        </div>
-      </div>
-      <button class="xlim-footer-login" type="button" data-login-google>
-        <i class="ri-google-fill"></i>
-        Login Google
-      </button>
-    `;
-  } else {
-    const name = getDisplayName(currentUser);
-    const avatar = getAvatar(currentUser);
-
-    box.innerHTML = `
-      <div class="xlim-footer-user">
-        <img class="xlim-footer-avatar" src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}">
-        <div>
-          <strong>${escapeHtml(name)}</strong>
-          <span>${escapeHtml(currentUser.email || '')}</span>
-        </div>
-      </div>
-      <div class="xlim-footer-actions">
-        <a href="/account/">
-          <i class="ri-user-3-line"></i>
-          Akun Saya
-        </a>
-        <button type="button" data-logout>
-          <i class="ri-logout-box-r-line"></i>
-          Logout
-        </button>
-      </div>
-    `;
-  }
-
-  initTouchEffect();
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   injectFinalStyles();
+  removeBadFooterAccount();
   initCanvas();
   initPreloader();
   initTyped();
@@ -1450,6 +1405,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initWelcomePopup();
   initRatingSection();
   updateUserUI();
+
+  setInterval(removeBadFooterAccount, 1200);
 });
 
 window.loginWithGoogle = loginWithGoogle;
