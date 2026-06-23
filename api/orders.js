@@ -1,35 +1,70 @@
-import { supabaseAdmin } from './_lib/supabase-admin.js';
-import { requireAdmin } from './_lib/admin-auth.js';
+import { getSupabaseAdmin } from './_lib/supabase-admin.js';
+import { readJson, requireAdmin, sendJson } from './_lib/admin-auth.js';
 
 export default async function handler(req, res) {
+  const supabase = getSupabaseAdmin();
+
   try {
-    const admin = requireAdmin(req, res);
-    if (!admin) return;
+    if (!requireAdmin(req, res)) return;
 
     if (req.method === 'GET') {
-      const { data, error } = await supabaseAdmin
-        .from('orders_admin_view')
+      const { data, error } = await supabase
+        .from('orders')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(200);
+
       if (error) throw error;
-      return res.status(200).json({ orders: data || [] });
+
+      sendJson(res, 200, {
+        success: true,
+        orders: data || []
+      });
+      return;
     }
 
     if (req.method === 'PUT') {
-      const id = req.query.id;
-      if (!id) return res.status(400).json({ message: 'ID order wajib diisi.' });
-      const allowed = ['status', 'payment_status', 'admin_note'];
-      const payload = {};
-      for (const key of allowed) {
-        if (req.body?.[key] !== undefined) payload[key] = req.body[key];
+      const body = await readJson(req);
+      const id = String(body.id || '').trim();
+
+      if (!id) {
+        sendJson(res, 400, {
+          success: false,
+          message: 'ID order kosong.'
+        });
+        return;
       }
-      const { data, error } = await supabaseAdmin.from('orders').update(payload).eq('id', id).select('*').single();
+
+      const payload = {};
+
+      if (body.status !== undefined) payload.status = String(body.status);
+      if (body.payment_status !== undefined) payload.payment_status = String(body.payment_status);
+      if (body.admin_note !== undefined) payload.admin_note = String(body.admin_note);
+
+      const { data, error } = await supabase
+        .from('orders')
+        .update(payload)
+        .eq('id', id)
+        .select('*')
+        .single();
+
       if (error) throw error;
-      return res.status(200).json({ order: data });
+
+      sendJson(res, 200, {
+        success: true,
+        order: data
+      });
+      return;
     }
 
-    return res.status(405).json({ message: 'Method not allowed' });
+    sendJson(res, 405, {
+      success: false,
+      message: 'Method tidak didukung.'
+    });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    sendJson(res, 500, {
+      success: false,
+      message: error.message || 'Server error.'
+    });
   }
 }
