@@ -76,6 +76,14 @@ a {
   display: none !important;
 }
 
+.admin-honeypot {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+}
+
 .auth-shell {
   min-height: 100vh;
   display: grid;
@@ -171,6 +179,7 @@ a {
 
 .input-group {
   position: relative;
+  display: block;
   margin-bottom: 20px;
 }
 
@@ -214,11 +223,6 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-}
-
-.input-row a {
-  color: #bfdbfe;
-  font-style: italic;
 }
 
 .login-btn {
@@ -353,7 +357,6 @@ a {
   gap: 10px;
 }
 
-.btn-sm,
 .btn-block,
 .btn-super,
 .btn-outline-super,
@@ -500,6 +503,20 @@ a {
   letter-spacing: -0.05em;
 }
 
+.system-title {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-size: 32px;
+  letter-spacing: -0.05em;
+}
+
+.system-desc {
+  margin: 0;
+  color: #94a3b8;
+  line-height: 1.8;
+  font-size: 15px;
+}
+
 .table-card {
   padding: 0;
   overflow: hidden;
@@ -571,6 +588,12 @@ a {
   font-family: var(--font-mono);
   font-size: 10px;
   word-break: break-all;
+}
+
+.price-text {
+  color: var(--admin-blue);
+  font-family: var(--font-mono);
+  font-weight: 900;
 }
 
 .badge {
@@ -666,6 +689,15 @@ a {
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 8px;
+}
+
+.order-id {
+  display: block;
+  margin-top: 8px;
+  color: var(--admin-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  word-break: break-all;
 }
 
 .order-controls {
@@ -795,18 +827,18 @@ a {
   color: rgba(148, 163, 184, 0.72);
 }
 
-.field label:has(input[type="checkbox"]) {
+.switch-label {
   min-height: 46px;
   padding: 10px 13px;
   border-radius: 15px;
   border: 1px solid rgba(148, 163, 184, 0.12);
   background: rgba(2, 6, 23, 0.42);
-  color: #cbd5e1;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0;
-  text-transform: none;
-  display: flex;
+  color: #cbd5e1 !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  display: flex !important;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
