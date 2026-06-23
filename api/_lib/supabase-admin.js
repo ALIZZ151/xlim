@@ -1,12 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 
-const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
+let cached = null;
 
-if (!url || !serviceRole) {
-  console.warn('SUPABASE_URL atau SUPABASE_SERVICE_ROLE_KEY belum diset di Vercel.');
+export function getSupabaseAdmin() {
+  if (cached) return cached;
+
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !key) {
+    throw new Error('SUPABASE_URL atau SUPABASE_SERVICE_ROLE_KEY belum diisi.');
+  }
+
+  cached = createClient(url, key, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+
+  return cached;
 }
-
-export const supabaseAdmin = createClient(url || 'https://example.supabase.co', serviceRole || 'missing-service-role', {
-  auth: { persistSession: false, autoRefreshToken: false }
-});
