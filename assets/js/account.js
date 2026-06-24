@@ -2,6 +2,8 @@ import { supabase } from './supabase-client.js';
 import { loginWithGoogle, logoutUser } from './main.js';
 import { waLink, BRAND_NAME } from './config.js';
 
+const HIDDEN_MARK = '[XLIM_HIDDEN_HISTORY]';
+
 function statusBadge(status) {
   const map = {
     pending: 'Menunggu',
@@ -18,6 +20,31 @@ function statusBadge(status) {
 function formatDate(date) {
   if (!date) return '-';
   return new Date(date).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+async function getProfileStatus(userId) {
+  const { data } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .maybeSingle();
+
+  return data?.role || 'customer';
+}
+
+function renderBlockedAccount(ordersBox, role) {
+  const title = role === 'deactivated' ? 'Akun Tidak Aktif' : 'Akun Sedang Suspend';
+  const desc = role === 'deactivated'
+    ? 'Akun ini dinonaktifkan oleh admin XLIM STORE. Hubungi admin jika menurut kamu ini kesalahan.'
+    : 'Akun ini sedang dibatasi sementara. Hubungi admin untuk bantuan lebih lanjut.';
+
+  ordersBox.innerHTML = `
+    <div class="empty-box">
+      <i class="ri-forbid-2-line"></i><br>
+      <b>${title}</b><br>
+      ${desc}
+    </div>
+  `;
 }
 
 async function renderAccount() {
@@ -47,7 +74,14 @@ async function renderAccount() {
   if (profileAvatar) profileAvatar.src = avatar;
 
   ordersBox.innerHTML = '<div class="empty-box"><i class="ri-loader-4-line ri-spin"></i><br>Memuat riwayat...</div>';
-  const { data: orders, error } = await supabase
+
+  const role = await getProfileStatus(user.id);
+  if (role === 'suspended' || role === 'deactivated') {
+    renderBlockedAccount(ordersBox, role);
+    return;
+  }
+
+  const { data: ordersRaw, error } = await supabase
     .from('orders')
     .select('*')
     .order('created_at', { ascending: false });
@@ -57,8 +91,10 @@ async function renderAccount() {
     return;
   }
 
+  const orders = (ordersRaw || []).filter((order) => !String(order.admin_note || '').startsWith(HIDDEN_MARK));
+
   if (!orders.length) {
-    ordersBox.innerHTML = '<div class="empty-box">Belum ada riwayat pembelian. Klik order produk dulu di halaman utama.</div>';
+    ordersBox.innerHTML = '<div class="empty-box">Belum ada riwayat pembelian aktif. Klik order produk dulu di halaman utama.</div>';
     return;
   }
 
