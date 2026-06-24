@@ -2056,3 +2056,318 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.loginWithGoogle = loginWithGoogle;
 window.logoutUser = logoutUser;
+
+const XLIM_ORDER_CONFIRM_KEY = 'xlimOrderConfirmedOnce';
+
+function xlimCleanText(value = '') {
+  return String(value).replace(/\s+/g, ' ').trim();
+}
+
+function xlimEscapeHtml(value = '') {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function xlimButtonText(button) {
+  return xlimCleanText(button?.innerText || button?.textContent || '');
+}
+
+function xlimIsOrderButton(button) {
+  if (!button) return false;
+  if (button.closest('.swal2-container')) return false;
+  if (button.disabled) return false;
+
+  const text = xlimButtonText(button).toLowerCase();
+
+  if (button.dataset[XLIM_ORDER_CONFIRM_KEY] === 'true') return true;
+
+  const hasOrderAttr =
+    button.hasAttribute('data-order') ||
+    button.hasAttribute('data-order-btn') ||
+    button.hasAttribute('data-product-id') ||
+    button.hasAttribute('data-order-product') ||
+    button.classList.contains('order-btn') ||
+    button.classList.contains('btn-order');
+
+  const isOrderText =
+    text.includes('order sekarang') ||
+    text.includes('beli sekarang') ||
+    text.includes('pesan sekarang') ||
+    text.includes('buat order') ||
+    text.includes('checkout');
+
+  const navbarOrderOnly = text === 'order';
+
+  if (navbarOrderOnly) return false;
+
+  return hasOrderAttr || isOrderText;
+}
+
+function xlimFindProductCard(button) {
+  return (
+    button.closest('[data-product-card]') ||
+    button.closest('[data-product-id]') ||
+    button.closest('.product-card') ||
+    button.closest('.ultra-card') ||
+    button.closest('article') ||
+    button.closest('.card') ||
+    button.parentElement
+  );
+}
+
+function xlimFindText(card, selectors) {
+  if (!card) return '';
+
+  for (const selector of selectors) {
+    const element = card.querySelector(selector);
+    const text = xlimCleanText(element?.innerText || element?.textContent || '');
+    if (text) return text;
+  }
+
+  return '';
+}
+
+function xlimExtractPrice(text = '') {
+  const normalized = xlimCleanText(text);
+
+  const rpMatch = normalized.match(/rp\s*[\d.,]+/i);
+  if (rpMatch) return rpMatch[0].replace(/\s+/g, ' ');
+
+  const numberMatch = normalized.match(/\b\d{2,}([\.,]\d{3})*\b/);
+  if (numberMatch) return numberMatch[0];
+
+  return '';
+}
+
+function xlimGetProductInfo(button) {
+  const card = xlimFindProductCard(button);
+
+  const datasetName =
+    button.dataset.productName ||
+    button.dataset.name ||
+    button.dataset.orderName ||
+    card?.dataset?.productName ||
+    card?.dataset?.name ||
+    '';
+
+  const datasetPrice =
+    button.dataset.productPrice ||
+    button.dataset.price ||
+    button.dataset.orderPrice ||
+    card?.dataset?.productPrice ||
+    card?.dataset?.price ||
+    '';
+
+  const nameFromCard = xlimFindText(card, [
+    '[data-product-name]',
+    '.product-name',
+    '.product-title',
+    '.card-title',
+    'h3',
+    'h2',
+    'strong'
+  ]);
+
+  const priceFromCard = xlimFindText(card, [
+    '[data-product-price]',
+    '.product-price',
+    '.price',
+    '.harga'
+  ]);
+
+  const fullCardText = xlimCleanText(card?.innerText || card?.textContent || '');
+  const priceFromText = xlimExtractPrice(priceFromCard || fullCardText);
+
+  return {
+    name: xlimCleanText(datasetName) || xlimCleanText(nameFromCard) || 'Produk XLIM STORE',
+    price: xlimCleanText(datasetPrice) || xlimCleanText(priceFromCard) || xlimCleanText(priceFromText) || 'Chat Admin'
+  };
+}
+
+function xlimBuildOrderConfirmHtml(product) {
+  return `
+    <div style="text-align:left">
+      <div style="
+        padding:16px;
+        border-radius:18px;
+        background:linear-gradient(135deg,rgba(56,189,248,.12),rgba(15,23,42,.72));
+        border:1px solid rgba(56,189,248,.22);
+        margin-bottom:14px;
+      ">
+        <div style="
+          font-size:10px;
+          letter-spacing:.18em;
+          text-transform:uppercase;
+          color:#7dd3fc;
+          font-weight:900;
+          margin-bottom:8px;
+        ">
+          Produk Dipilih
+        </div>
+
+        <div style="
+          color:#fff;
+          font-size:18px;
+          line-height:1.25;
+          font-weight:900;
+          margin-bottom:8px;
+        ">
+          ${xlimEscapeHtml(product.name)}
+        </div>
+
+        <div style="
+          color:#38bdf8;
+          font-size:15px;
+          font-weight:900;
+          font-family:monospace;
+        ">
+          ${xlimEscapeHtml(product.price)}
+        </div>
+      </div>
+
+      <p style="
+        color:#cbd5e1;
+        font-size:13px;
+        line-height:1.8;
+        margin:0;
+      ">
+        Pastikan produk yang kamu pilih sudah benar. Kalau lanjut, order akan dibuat dan tersimpan di akun kamu.
+      </p>
+    </div>
+  `;
+}
+
+async function xlimShowOrderConfirm(product) {
+  if (!window.Swal) {
+    return window.confirm(`Buat order untuk ${product.name}?`);
+  }
+
+  const result = await Swal.fire({
+    title: 'Konfirmasi Order',
+    html: xlimBuildOrderConfirmHtml(product),
+    icon: 'question',
+    background: '#07111f',
+    color: '#ffffff',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Buat Order',
+    cancelButtonText: 'Batal',
+    confirmButtonColor: '#38bdf8',
+    cancelButtonColor: '#334155',
+    reverseButtons: true,
+    focusCancel: true,
+    allowOutsideClick: true,
+    customClass: {
+      popup: 'xlim-order-confirm-popup'
+    }
+  });
+
+  return result.isConfirmed;
+}
+
+function xlimTriggerOriginalOrder(button) {
+  button.dataset[XLIM_ORDER_CONFIRM_KEY] = 'true';
+
+  setTimeout(() => {
+    button.click();
+
+    setTimeout(() => {
+      delete button.dataset[XLIM_ORDER_CONFIRM_KEY];
+    }, 900);
+  }, 80);
+}
+
+function xlimInjectOrderConfirmStyle() {
+  if (document.getElementById('xlim-order-confirm-style')) return;
+
+  const style = document.createElement('style');
+  style.id = 'xlim-order-confirm-style';
+  style.textContent = `
+    .xlim-order-confirm-popup {
+      border-radius: 26px !important;
+      border: 1px solid rgba(56,189,248,.20) !important;
+      box-shadow: 0 30px 90px rgba(0,0,0,.45) !important;
+      overflow: hidden !important;
+    }
+
+    .xlim-order-confirm-popup .swal2-title {
+      font-family: "Outfit", "Plus Jakarta Sans", sans-serif !important;
+      font-size: 28px !important;
+      font-weight: 900 !important;
+      letter-spacing: -.04em !important;
+    }
+
+    .xlim-order-confirm-popup .swal2-actions {
+      gap: 10px !important;
+      width: 100% !important;
+      padding: 0 20px 18px !important;
+    }
+
+    .xlim-order-confirm-popup .swal2-confirm,
+    .xlim-order-confirm-popup .swal2-cancel {
+      min-height: 46px !important;
+      border-radius: 15px !important;
+      font-weight: 900 !important;
+      padding: 0 18px !important;
+    }
+
+    @media (max-width: 520px) {
+      .xlim-order-confirm-popup {
+        width: calc(100% - 24px) !important;
+      }
+
+      .xlim-order-confirm-popup .swal2-actions {
+        flex-direction: column-reverse !important;
+      }
+
+      .xlim-order-confirm-popup .swal2-confirm,
+      .xlim-order-confirm-popup .swal2-cancel {
+        width: 100% !important;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+function xlimInitOrderConfirmation() {
+  if (window.__XLIM_ORDER_CONFIRM_ACTIVE__) return;
+  window.__XLIM_ORDER_CONFIRM_ACTIVE__ = true;
+
+  xlimInjectOrderConfirmStyle();
+
+  document.addEventListener(
+    'click',
+    async (event) => {
+      const button = event.target.closest('button, a');
+
+      if (!xlimIsOrderButton(button)) return;
+
+      if (button.dataset[XLIM_ORDER_CONFIRM_KEY] === 'true') {
+        delete button.dataset[XLIM_ORDER_CONFIRM_KEY];
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+      const product = xlimGetProductInfo(button);
+      const confirmed = await xlimShowOrderConfirm(product);
+
+      if (!confirmed) return;
+
+      xlimTriggerOriginalOrder(button);
+    },
+    true
+  );
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', xlimInitOrderConfirmation);
+} else {
+  xlimInitOrderConfirmation();
+}
